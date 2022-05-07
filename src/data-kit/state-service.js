@@ -6,6 +6,7 @@ import { put, takeLatest, select, call, all } from 'redux-saga/effects'
 import { default as isFunction } from 'lodash/isFunction'
 import { default as omit } from 'lodash/omit'
 import { default as get } from 'lodash/get'
+import { default as set } from 'lodash/set'
 
 //------------ Config ---------------
 
@@ -13,6 +14,17 @@ const ACTION_SEPARATION_CHARS = ':@'
 const CONFIG_PROPS_OF_SLICE = ['name', 'initialState', 'selectors']
 
 //------------ private utils start---------------
+
+// ----------
+// Cache
+// ----------
+let _cache = {}
+const setCacheValue = (namespace, key, value) => {
+  set(_cache, [namespace, key], value)
+}
+const getCacheValue = (namespace, key) => {
+  return get(_cache, [namespace, key], null)
+}
 
 // ----------
 // Preferences
@@ -67,27 +79,6 @@ const getReducerFromAction = (slice, actionType) => {
   }
 }
 
-const produceAction = (sliceName, actionName, step) => {
-  const slice = getSlice(sliceName)
-  let reducer = get(slice, [actionName, 'reducer'])
-
-  let type = ''
-  // check top level
-  if (reducer) {
-    type = sliceName + ACTION_SEPARATION_CHARS + actionName
-  } else {
-    // check nested level
-    // if step not defined then it's request
-    type = sliceName + ACTION_SEPARATION_CHARS + actionName + ACTION_SEPARATION_CHARS + (step || 'request')
-  }
-  return (payload) => {
-    return {
-      type,
-      payload,
-    }
-  }
-}
-
 const getAllSagasOfSlice = (slice) => {
   // returns a list of all sagas of a slice
   // [[actionName, handler, sagaEffect]]
@@ -113,16 +104,74 @@ const getAllSagasOfSlice = (slice) => {
   }
   return sagas
 }
+
+const getHandlerPath = (sliceName, actionName, step) => {
+  const slice = getSlice(sliceName)
+
+  // returns null or path [actionName, step]
+  let handler = get(slice, [actionName], {})
+
+  if (handler.reducer || handler.saga) {
+    return [actionName]
+  } else {
+    step = step || 'request'
+    return [actionName, step]
+  }
+}
+
+const produceAction = (sliceName, actionName, step) => {
+  return (payload) => {
+    const cacheKey = [sliceName, actionName, step || ''].join('')
+    let value = getCacheValue('produceAction', cacheKey)
+    if (!value) {
+      let path = getHandlerPath(sliceName, actionName, step)
+      value = [sliceName, ...path].join(ACTION_SEPARATION_CHARS)
+      setCacheValue(produceAction, cacheKey, value)
+    }
+    return {
+      type: value,
+      payload,
+    }
+  }
+}
+
+let _actionProxies = {}
+const _getActionsProxyHandler = {
+  get(target, actionName, receiver) {
+    return (payload, step) => {
+      return produceAction(target.name, actionName, step)(payload)
+    }
+  },
+}
+let _useActionProxies = {}
+
+const _useActionsProxyHandler = {
+  get(target, actionName, receiver) {
+    return (payload, step) => {
+      const { sliceName, dispatch } = target
+      const actions = getActions(sliceName)
+      const action = actions[actionName]
+      dispatch(action(payload, step))
+    }
+  },
+}
 //------------ private utils end---------------
 
 //------------ Public APIs ---------------
 
-const config = () => {}
+// ---------------
+// setup
+// ---------------
+const setup = () => {}
+
+// ---------------
+// create slice
+// ---------------
 const createSlice = (s) => s
 
-// ----------
+// ---------------
 // configureStore
-// ----------
+// ---------------
 const configureStore = (...slices) => {
   let reducers = {}
   let allSagas = [] //[[actionName, handler, sagaEffect]]
@@ -159,52 +208,32 @@ const configureStore = (...slices) => {
   return store
 }
 
-// Actions proxy start
-
-let _actionProxies = {}
-const _getActionsProxyHandler = {
-  get(target, actionName, receiver) {
-    return (payload, step) => {
-      return produceAction(target.name, actionName, step)(payload)
-    }
-  },
-}
+// ---------------
+// getActions
+// ---------------
 const getActions = (sliceName) => {
   /**
-     * egs:
-    // REQUEST: getAction('user').authenticate() 
-    // SUCCESS: getAction('user').authenticate(data,'success')
-    // FAILURE: getAction('user').authenticate(data,'failure')
-     */
+   * egs:
+   * REQUEST: getAction('user').authenticate()
+   * SUCCESS: getAction('user').authenticate(data,'success')
+   * FAILURE: getAction('user').authenticate(data,'failure')
+   */
   if (!_actionProxies[sliceName]) {
     _actionProxies[sliceName] = new Proxy(getSlice(sliceName), _getActionsProxyHandler)
   }
   return _actionProxies[sliceName]
 }
 
-// Actions proxy end
-
-// USE_Actions proxy start
-
-let _useActionProxies = {}
-
-const _useActionsProxyHandler = {
+// ---------------
+// useActions
+// ---------------
+const useActions = (sliceName) => {
   /**
    * const {authenticate} = useActions('user')
    * authenticate(payload)
    * authenticate(payload,'success')
    * authenticate(payload,'failure')
    */
-  get(target, actionName, receiver) {
-    return (payload, step) => {
-      const { sliceName, dispatch } = target
-      const actions = getActions(sliceName)
-      const action = actions[actionName]
-      dispatch(action(payload, step))
-    }
-  },
-}
-const useActions = (sliceName) => {
   const dispatch = useDispatch()
   if (!_useActionProxies[sliceName]) {
     _useActionProxies[sliceName] = new Proxy({ sliceName, dispatch }, _useActionsProxyHandler)
@@ -212,10 +241,8 @@ const useActions = (sliceName) => {
   return _useActionProxies[sliceName]
 }
 
-// USE_Actions proxy end
-
 const useStateService = () => {
   return null
 }
 
-export { config, createSlice, configureStore, useActions, useStateService, getActions }
+export { setup, createSlice, configureStore, useActions, useStateService, getActions }
