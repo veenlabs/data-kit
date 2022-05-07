@@ -11,6 +11,10 @@ import { default as set } from 'lodash/set'
 
 const ACTION_SEPARATION_CHARS = ':@'
 const CONFIG_PROPS_OF_SLICE = ['name', 'initialState', 'selectors']
+let DEFAULT_PREFERENCES = {
+  loggingEnabled: true,
+  defaultSagaEffect: takeLatest,
+}
 
 //------------ private utils start---------------
 
@@ -28,13 +32,12 @@ const getCacheValue = (namespace, key) => {
 // ----------
 // Preferences
 // ----------
-let _preferences = {
-  loggingEnabled: true,
-  defaultSagaEffect: takeLatest,
+
+const setPreferences = (prefs) => {
+  setCacheValue('app', 'preferences', { ...DEFAULT_PREFERENCES, prefs })
 }
-const setPreferences = (pref) => ({ ..._preferences, ...pref })
-const getAllPreferences = (pref) => _preferences
-const getPrefernces = (propName) => get(_preferences, propName)
+const getAllPreferences = () => getCacheValue('app', 'preferences') || DEFAULT_PREFERENCES
+const getPreferences = (propName) => get(getAllPreferences(), propName)
 
 // ----------
 // Slices
