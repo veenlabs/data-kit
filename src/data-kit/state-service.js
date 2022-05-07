@@ -2,8 +2,7 @@ import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { useDispatch } from 'react-redux'
 import { createLogger } from 'redux-logger'
 import createSagaMiddleWare from 'redux-saga'
-import { put, takeLatest, select, call, all } from 'redux-saga/effects'
-import { default as isFunction } from 'lodash/isFunction'
+import { put, takeLatest } from 'redux-saga/effects'
 import { default as omit } from 'lodash/omit'
 import { default as get } from 'lodash/get'
 import { default as set } from 'lodash/set'
@@ -40,11 +39,8 @@ const getPrefernces = (propName) => get(_preferences, propName)
 // ----------
 // Slices
 // ----------
-let _slices = {}
-const storeSlice = (slice) => {
-  _slices[slice.name] = slice
-}
-const getSlice = (sliceName) => _slices[sliceName]
+const storeSlice = (slice) => setCacheValue('slices', slice.name, slice)
+const getSlice = (sliceName) => getCacheValue('slices', sliceName)
 
 // ----------
 // Utils
@@ -148,15 +144,13 @@ const produceAction = (sliceName, actionName, step) => {
   }
 }
 
-let _actionProxies = {}
-const _getActionsProxyHandler = {
+const getActionsProxyHandler = {
   get(target, actionName, receiver) {
     return (payload, step) => {
       return produceAction(target.name, actionName, step)(payload)
     }
   },
 }
-let _useActionProxies = {}
 
 const _useActionsProxyHandler = {
   get(target, actionName, receiver) {
@@ -201,9 +195,6 @@ const configureStore = (...slices) => {
       const effect = saga[2] || takeLatest
       yield effect(saga[0], saga[1])
     })
-    // sagasToRun.push(function* () {
-    //   yield takeLatest(saga[0], saga[1])
-    // })
   }
 
   const middlewares = []
@@ -226,15 +217,16 @@ const configureStore = (...slices) => {
 // ---------------
 const getActions = (sliceName) => {
   /**
-   * egs:
    * REQUEST: getAction('user').authenticate()
    * SUCCESS: getAction('user').authenticate(data,'success')
    * FAILURE: getAction('user').authenticate(data,'failure')
    */
-  if (!_actionProxies[sliceName]) {
-    _actionProxies[sliceName] = new Proxy(getSlice(sliceName), _getActionsProxyHandler)
+  let value = getCacheValue('getActions', sliceName)
+  if (!value) {
+    value = new Proxy(getSlice(sliceName), getActionsProxyHandler)
+    setCacheValue('getActions', sliceName, value)
   }
-  return _actionProxies[sliceName]
+  return value
 }
 
 // ---------------
@@ -248,12 +240,17 @@ const useActions = (sliceName) => {
    * authenticate(payload,'failure')
    */
   const dispatch = useDispatch()
-  if (!_useActionProxies[sliceName]) {
-    _useActionProxies[sliceName] = new Proxy({ sliceName, dispatch }, _useActionsProxyHandler)
+  let value = getCacheValue('useActions', sliceName)
+  if (!value) {
+    value = new Proxy({ sliceName, dispatch }, _useActionsProxyHandler)
+    setCacheValue('useActions', sliceName, value)
   }
-  return _useActionProxies[sliceName]
+  return value
 }
 
+// ---------------
+// use selector
+// ---------------
 const useStateService = () => {
   return null
 }
