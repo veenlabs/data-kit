@@ -203,7 +203,7 @@ const configureStore = (...slices) => {
   const middlewares = []
   const sagaMiddleWare = createSagaMiddleWare()
   middlewares.push(sagaMiddleWare)
-  if (getPrefernces('loggingEnabled')) {
+  if (getPreferences('loggingEnabled')) {
     middlewares.push(
       createLogger({
         logErrors: true,
@@ -238,9 +238,9 @@ const getActions = (sliceName) => {
 const useActions = (sliceName) => {
   /**
    * const {authenticate} = useActions('user')
-   * authenticate(payload)
-   * authenticate(payload,'success')
-   * authenticate(payload,'failure')
+   * REQUEST: authenticate(payload)
+   * SUCCESS: authenticate(payload,'success')
+   * FAILURE: authenticate(payload,'failure')
    */
   const dispatch = useDispatch()
   let value = getCacheValue('useActions', sliceName)
