@@ -44,6 +44,9 @@ const produceReducerFromSlice = (slice) => {
     const reducer = getReducerFromAction(slice, action.type)
     if (reducer) {
       const newState = reducer(state, action)
+      if (typeof newState === 'undefined') {
+        return state
+      }
       return newState
     }
 
@@ -51,48 +54,42 @@ const produceReducerFromSlice = (slice) => {
   }
 }
 
-// @todo: Buggy
 const getReducerFromAction = (slice, actionType) => {
-  const [sliceName, action, step] = actionType.split(ACTION_SEPARATION_CHARS)
-
-  //
+  const [sliceName, actionName, step] = actionType.split(ACTION_SEPARATION_CHARS)
   if (sliceName !== slice.name) {
     return undefined
   }
-  const handler = get(slice, [action])
-  const isHandlerFn = isFunction(handler)
-  //@todo. It should not be api service
-  if (isHandlerFn) {
-    return handler
+  let reducer = get(slice, [actionName, 'reducer'])
+  if (reducer) {
+    return reducer
+  } else {
+    return get(slice, [actionName, step || 'request', 'reducer'])
   }
-  return get(slice, [action, step, 'reducer'])
 }
 
-// @todo: Buggy
 const produceAction = (sliceName, actionName, step) => {
-  let type = ''
   const slice = getSlice(sliceName)
-  const handler = get(slice, [actionName])
-  //@todo. It should not be api service
-  const isHandlerFn = isFunction(handler)
+  let reducer = get(slice, [actionName, 'reducer'])
 
-  if (isHandlerFn) {
-    type = actionName
+  let type = ''
+  // check top level
+  if (reducer) {
+    type = sliceName + ACTION_SEPARATION_CHARS + actionName
   } else {
-    step = step ? step : 'request'
-    type = actionName + ACTION_SEPARATION_CHARS + step
+    // check nested level
+    // if step not defined then it's request
+    type = sliceName + ACTION_SEPARATION_CHARS + actionName + ACTION_SEPARATION_CHARS + (step || 'request')
   }
-
   return (payload) => {
     return {
-      type: sliceName + ACTION_SEPARATION_CHARS + type,
+      type,
       payload,
     }
   }
 }
 
 const getAllSagasOfSlice = (slice) => {
-  // returns a list of sagas of a slice
+  // returns a list of all sagas of a slice
   // [[actionName, handler, sagaEffect]]
 
   const actions = omit(slice, CONFIG_PROPS_OF_SLICE)
@@ -109,7 +106,7 @@ const getAllSagasOfSlice = (slice) => {
       for (let prop of nestedProps) {
         saga = get(action, [prop, 'saga'])
         if (saga) {
-          sagas.push([sliceName + ACTION_SEPARATION_CHARS + actionName + ACTION_SEPARATION_CHARS + prop, saga, get(action, prop, 'sagaEffect')])
+          sagas.push([sliceName + ACTION_SEPARATION_CHARS + actionName + ACTION_SEPARATION_CHARS + prop, saga, get(action, [prop, 'sagaEffect'])])
         }
       }
     }
@@ -139,10 +136,14 @@ const configureStore = (...slices) => {
 
   for (let saga of allSagas) {
     sagasToRun.push(function* () {
-      console.log(saga[0])
-      yield takeLatest(saga[0], saga[1])
+      const effect = saga[2] || takeLatest
+      yield effect(saga[0], saga[1])
     })
+    // sagasToRun.push(function* () {
+    //   yield takeLatest(saga[0], saga[1])
+    // })
   }
+
   const middlewares = []
   const sagaMiddleWare = createSagaMiddleWare()
   middlewares.push(sagaMiddleWare)
@@ -218,13 +219,3 @@ const useStateService = () => {
 }
 
 export { config, createSlice, configureStore, useActions, useStateService, getActions }
-
-// const user = {
-//     a:{
-//         b:{
-//             c:1
-//         }
-//     }
-// }
-
-// console.log(get(user,['a','b','c']))

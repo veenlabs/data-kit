@@ -1,4 +1,5 @@
-import { createSlice } from '@veenlabs/data-kit/state-service'
+import { createSlice, getActions } from '@veenlabs/data-kit/state-service'
+import { put } from 'redux-saga/effects'
 
 const slice = createSlice({
   name: 'products',
@@ -9,19 +10,28 @@ const slice = createSlice({
       reducer: (state) => {
         return state.concat(Date.now())
       },
-      saga: function* () {},
-      sagaEffect: 'takeLatest',
+      saga: function* () {
+        console.log('product:get:request:saga')
+        yield put(getActions('products').get(['shoes', 'bulbs'], 'success'))
+      },
     },
     success: {
-      reducer: () => {},
-      saga: function* () {},
-      sagaEffect: 'takeLatest',
+      reducer: (actions, { payload }) => {
+        return payload
+      },
+      saga: function* () {
+        console.log('product:success:request:saga')
+      },
     },
   },
   someThingElse: {
-    reducer: () => {},
-    saga: function* () {},
-    sagaEffect: 'takeLatest',
+    reducer: (state) => {
+      // console.log('someThingElse.reducer')
+      // return state
+    },
+    saga: function* () {
+      console.log('product:someThingElse:saga')
+    },
   },
 })
 

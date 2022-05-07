@@ -31,12 +31,10 @@ const slice = createSlice({
       saga: function* () {
         console.log('MAKE API CALL. SHOULD COME HERE')
       },
-      sagaEffect: 'takeLatest',
     },
     success: {
       reducer: () => {},
       saga: function* () {},
-      sagaEffect: 'takeLatest',
     },
   },
   me: apiService.getMe,

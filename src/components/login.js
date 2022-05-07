@@ -5,7 +5,7 @@ function Login() {
   const userReady = useStateService('user:getIsSet')
   const fullName = useStateService('user:getFullName')
   const { authenticate } = useActions('user')
-  const { get: getProducts } = useActions('products')
+  const { get: getProducts, someThingElse } = useActions('products')
 
   const click2 = () => {
     const actions = getActions('user')
@@ -22,6 +22,7 @@ function Login() {
       <button onClick={() => authenticate({ user: 'zpraveen' })}>Login</button> <br />
       <button onClick={click2}>click2</button> <br />
       <button onClick={getProducts}>get Products</button> <br />
+      <button onClick={someThingElse}>Product:Something else</button> <br />
     </>
   )
 }
