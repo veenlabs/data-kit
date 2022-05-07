@@ -20,7 +20,7 @@ const slice = createSlice({
         return payload
       },
       saga: function* () {
-        console.log('product:success:request:saga')
+        console.log('product:get:success:saga')
       },
     },
   },

@@ -50,7 +50,8 @@ const getSlice = (sliceName) => _slices[sliceName]
 // Utils
 // ----------
 
-const produceReducerFromSlice = (slice) => {
+// 1
+const produceReducerForSlice = (slice) => {
   const { name, initialState, selectors } = slice
   return (state = initialState, action) => {
     const reducer = getReducerFromAction(slice, action.type)
@@ -66,19 +67,18 @@ const produceReducerFromSlice = (slice) => {
   }
 }
 
+// 2
 const getReducerFromAction = (slice, actionType) => {
   const [sliceName, actionName, step] = actionType.split(ACTION_SEPARATION_CHARS)
   if (sliceName !== slice.name) {
     return undefined
   }
-  let reducer = get(slice, [actionName, 'reducer'])
-  if (reducer) {
-    return reducer
-  } else {
-    return get(slice, [actionName, step || 'request', 'reducer'])
-  }
+  const path = getHandlerPath(sliceName, actionName, step)
+  let reducer = get(slice, [...path, 'reducer'])
+  return reducer
 }
 
+// 5
 const getAllSagasOfSlice = (slice) => {
   // returns a list of all sagas of a slice
   // [[actionName, handler, sagaEffect]]
@@ -88,16 +88,18 @@ const getAllSagasOfSlice = (slice) => {
   const sliceName = slice.name
 
   for (let actionName in actions) {
-    const action = slice[actionName]
-    let saga = get(action, ['saga'])
-    if (saga) {
-      sagas.push([sliceName + ACTION_SEPARATION_CHARS + actionName, saga, get(action, 'sagaEffect')])
-    } else {
-      const nestedProps = ['request', 'success', 'failure']
-      for (let prop of nestedProps) {
-        saga = get(action, [prop, 'saga'])
-        if (saga) {
-          sagas.push([sliceName + ACTION_SEPARATION_CHARS + actionName + ACTION_SEPARATION_CHARS + prop, saga, get(action, [prop, 'sagaEffect'])])
+    const steps = [undefined, 'request', 'success', 'failure']
+
+    let pushedTypes = {}
+
+    for (let step of steps) {
+      const path = getHandlerPath(sliceName, actionName, step)
+      const saga = get(slice, [...path, 'saga'])
+      if (saga) {
+        const type = produceAction(sliceName, actionName, step)().type
+        if (!pushedTypes[type]) {
+          sagas.push([type, saga, get(get(slice, [...path, 'sagaEffect']))])
+          pushedTypes[type] = type
         }
       }
     }
@@ -105,26 +107,37 @@ const getAllSagasOfSlice = (slice) => {
   return sagas
 }
 
+// 3
 const getHandlerPath = (sliceName, actionName, step) => {
+  // returns null or path [actionName, step]
+  const cacheKey = [sliceName, actionName, step || ''].join('')
+  let value = getCacheValue('getHandlerPath', cacheKey)
+  if (value) {
+    return value
+  }
+
   const slice = getSlice(sliceName)
 
-  // returns null or path [actionName, step]
   let handler = get(slice, [actionName], {})
 
   if (handler.reducer || handler.saga) {
-    return [actionName]
+    value = [actionName]
   } else {
     step = step || 'request'
-    return [actionName, step]
+    value = [actionName, step]
   }
+  setCacheValue('getHandlerPath', cacheKey, value)
+  return value
 }
 
+// 4
 const produceAction = (sliceName, actionName, step) => {
   return (payload) => {
     const cacheKey = [sliceName, actionName, step || ''].join('')
     let value = getCacheValue('produceAction', cacheKey)
     if (!value) {
       let path = getHandlerPath(sliceName, actionName, step)
+      console.log({ path, sliceName, actionName, step })
       value = [sliceName, ...path].join(ACTION_SEPARATION_CHARS)
       setCacheValue(produceAction, cacheKey, value)
     }
@@ -178,7 +191,7 @@ const configureStore = (...slices) => {
   let sagasToRun = []
 
   for (let slice of slices) {
-    reducers[slice.name] = produceReducerFromSlice(slice)
+    reducers[slice.name] = produceReducerForSlice(slice)
     allSagas = allSagas.concat(getAllSagasOfSlice(slice))
     storeSlice(slice)
   }
