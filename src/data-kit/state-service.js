@@ -2,7 +2,7 @@ import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { useDispatch } from 'react-redux'
 import { createLogger } from 'redux-logger'
 import createSagaMiddleWare from 'redux-saga'
-import { put, takeLatest } from 'redux-saga/effects'
+import { call, put, takeLatest } from 'redux-saga/effects'
 import { default as omit } from 'lodash/omit'
 import { default as get } from 'lodash/get'
 import { default as set } from 'lodash/set'
@@ -187,9 +187,9 @@ const configureStore = (...slices) => {
   let sagasToRun = []
 
   for (let slice of slices) {
+    storeSlice(slice)
     reducers[slice.name] = produceReducerForSlice(slice)
     allSagas = allSagas.concat(getAllSagasOfSlice(slice))
-    storeSlice(slice)
   }
 
   for (let saga of allSagas) {
