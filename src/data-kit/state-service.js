@@ -136,7 +136,6 @@ const produceAction = (sliceName, actionName, step) => {
     let value = getCacheValue('produceAction', cacheKey)
     if (!value) {
       let path = getHandlerPath(sliceName, actionName, step)
-      console.log({ path, sliceName, actionName, step })
       value = [sliceName, ...path].join(ACTION_SEPARATION_CHARS)
       setCacheValue(produceAction, cacheKey, value)
     }

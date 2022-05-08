@@ -1,5 +1,6 @@
 import React from 'react'
 import { useActions, useStateService, getActions } from '@veenlabs/data-kit/state-service'
+import { apiService } from '@veenlabs/data-kit/api-service'
 
 function Login() {
   const userReady = useStateService('user:getIsSet')
@@ -14,6 +15,15 @@ function Login() {
     console.log('user:authenticate:failure-->', actions.authenticate({ a: 1, b: 2, c: 3 }, 'failure'))
   }
 
+  const handleApiService = async () => {
+    // const result1 = await apiService.updateUser()
+    const result4 = await apiService.createUser() //()
+    // const result2 = apiService.getMe//()
+    // const result3 = apiService.server2.getMe//()
+    // console.log({result1, result2})
+    console.log(result4)
+  }
+
   if (userReady) {
     return <div>Hello {fullName}</div>
   }
@@ -23,6 +33,7 @@ function Login() {
       <button onClick={click2}>click2</button> <br />
       <button onClick={getProducts}>get Products</button> <br />
       <button onClick={someThingElse}>Product:Something else</button> <br />
+      <button onClick={handleApiService}>apiService.getMe</button> <br />
     </>
   )
 }

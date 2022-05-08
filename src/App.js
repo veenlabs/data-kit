@@ -1,6 +1,9 @@
 import React from 'react'
 import { Provider, useSelector } from 'react-redux'
+
 import store from './data/store'
+import './data/apiSetup'
+
 import Login from './components/login'
 
 const Component = () => {
