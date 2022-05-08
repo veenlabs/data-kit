@@ -106,6 +106,8 @@ const getAllSagasOfSlice = (slice) => {
   return sagas
 }
 
+const isHandlerAnAPI = (handler) => typeof handler === 'function' && get(handler, '__type') === 'api_service'
+
 // 3
 const getHandlerPath = (sliceName, actionName, step) => {
   // returns null or path [actionName, step]
@@ -176,7 +178,39 @@ const setup = () => {}
 // ---------------
 // create slice
 // ---------------
-const createSlice = (s) => s
+const createSlice = (slice) => {
+  const _createSaga = (actionName, apiService) => {
+    const saga = function* () {
+      const result = yield call(apiService)
+      let path = [slice.name, actionName, 'success']
+      yield put({
+        type: path.join(ACTION_SEPARATION_CHARS),
+        payload: result,
+      })
+    }
+    return saga
+  }
+
+  const actions = omit(slice, CONFIG_PROPS_OF_SLICE)
+  for (let actionName in actions) {
+    const action = actions[actionName]
+    // handler is top level api call
+    if (isHandlerAnAPI(action)) {
+      const saga = _createSaga(actionName, action)
+      const reducer = (action, { payload }) => payload
+      set(slice, [actionName, 'request', 'saga'], saga)
+      set(slice, [actionName, 'success', 'reducer'], reducer)
+    } else {
+      const requestStep = get(slice, [actionName, 'request'])
+      if (isHandlerAnAPI(requestStep)) {
+        const saga = _createSaga(actionName, requestStep)
+        set(slice, [actionName, 'request', 'saga'], saga)
+      }
+    }
+  }
+
+  return slice
+}
 
 // ---------------
 // configureStore

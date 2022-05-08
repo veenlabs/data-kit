@@ -33,7 +33,7 @@ const initialState = null
 // data slices
 const slice = createSlice({
   // config
-
+  name: 'user',
   initialState: initialState,
   selectors: {
     getIsSet: (user) => !!user,

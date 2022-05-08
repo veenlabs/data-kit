@@ -1,8 +1,8 @@
 import React from 'react'
 import { Provider, useSelector } from 'react-redux'
 
-import store from './data/store'
 import './data/apiSetup'
+import store from './data/store'
 
 import Login from './components/login'
 

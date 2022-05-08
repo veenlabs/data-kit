@@ -81,12 +81,14 @@ const handler2 = {
     const { beforeRequest, beforeSuccess } = getBeforeRequestBeforeRequest(apiOptions, serverConfig)
     requestOptions = beforeRequest(requestOptions)
     return () => {
-      return async () => {
+      const serviceRequestHandler = async () => {
         setApiStatus(serverName, apiName, API_STATUSES.REQUEST)
         const result = await axios(requestOptions)
         setApiStatus(serverName, apiName, API_STATUSES.SUCCESS)
         return beforeSuccess(result.data)
       }
+      serviceRequestHandler.__type = 'api_service'
+      return serviceRequestHandler
     }
   },
 }
@@ -103,15 +105,6 @@ const apiServiceHandler = {
         return proxy2[prop]()
       } catch (error) {}
     }
-    // console.log({isServer})
-    // console.log(_cache)
-    // return function () {
-    //   // return new Promise((resolve) => {
-    //   //   // setTimeout(function () {
-    //   //   //   resolve('Hello from promise')
-    //   //   // }, 300)
-    //   // })
-    // }
   },
 }
 
