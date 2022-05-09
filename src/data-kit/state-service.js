@@ -1,5 +1,5 @@
 import { createStore, combineReducers, applyMiddleware } from 'redux'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { createLogger } from 'redux-logger'
 import createSagaMiddleWare from 'redux-saga'
 import { call, put, takeLatest } from 'redux-saga/effects'
@@ -306,8 +306,25 @@ const useReset = () => {
 // ---------------
 // use selector
 // ---------------
-const useStateService = () => {
+
+const nullSelector = () => {
+  console.warn('Invalid selector')
   return null
 }
+const useStateSelector = (selectorPath) => {
+  const [sliceName, selectorName] = selectorPath.split(':')
+  const slice = getSlice(sliceName)
+  const selectorFromSlice = get(slice, ['selectors', selectorName], nullSelector)
+  const selector = (s) => {
+    try {
+      return selectorFromSlice(get(s, [sliceName]), s)
+    } catch (error) {
+      console.warn('Error thrown from selector', selectorPath)
+      console.warn(error)
+    }
+  }
+  const result = useSelector(selector)
+  return result
+}
 
-export { setup, createSlice, configureStore, useActions, useStateService, getActions, useReset }
+export { setup, createSlice, configureStore, useActions, useStateSelector, getActions, useReset }
