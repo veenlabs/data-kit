@@ -6,6 +6,7 @@ import { call, put, takeLatest } from 'redux-saga/effects'
 import { default as omit } from 'lodash/omit'
 import { default as get } from 'lodash/get'
 import { default as set } from 'lodash/set'
+import produce from 'immer'
 
 //------------ Config ---------------
 
@@ -59,7 +60,8 @@ const produceReducerForSlice = (slice) => {
     } else {
       const reducer = getReducerFromAction(slice, action.type)
       if (reducer) {
-        const newState = reducer(state, action)
+        // const newState = reducer(state, action)
+        const newState = produce(state, (draft) => reducer(draft, action))
         if (typeof newState === 'undefined') {
           return state
         }
