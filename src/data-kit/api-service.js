@@ -102,9 +102,14 @@ const handler2 = {
     return () => {
       const serviceRequestHandler = async () => {
         setApiStatus(serverName, apiName, API_STATUSES.REQUEST)
-        const result = await axios(requestOptions)
-        setApiStatus(serverName, apiName, API_STATUSES.SUCCESS)
-        return beforeSuccess(result.data)
+        try {
+          const result = await axios(requestOptions)
+          setApiStatus(serverName, apiName, API_STATUSES.SUCCESS)
+          return beforeSuccess(result.data)
+        } catch (error) {
+          setApiStatus(serverName, apiName, API_STATUSES.FAILURE)
+          throw error
+        }
       }
       serviceRequestHandler.__type = 'api_service'
       return serviceRequestHandler
@@ -174,10 +179,6 @@ const useApiStatus = (apiName, serverName = 'base') => {
   const key = _getKey(serverName, apiName)
   let contextData = useContext(ApiStatusContext)
   return get(contextData, ['status', key], null)
-}
-
-window.get = () => {
-  console.log(_cache)
 }
 
 const apiService = new Proxy({}, apiServiceHandler)
