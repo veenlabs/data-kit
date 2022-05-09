@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { default as get } from 'lodash/get'
 import { default as set } from 'lodash/set'
+import React, { useContext, createContext, useState } from 'react'
+import produce from 'immer'
 
 //------------ private utils start---------------
 
@@ -8,7 +10,7 @@ import { default as set } from 'lodash/set'
 // Cache
 // ----------
 let _cache = {}
-const CACHE_NAMESPACES = { config: 'config', apis: 'apis', apiStatus: 'api_status' }
+const CACHE_NAMESPACES = { config: 'config', apis: 'apis', apiStatus: 'api_status', subscribers: 'subscribers' }
 const defaultServerName = 'base'
 const API_STATUSES = { REQUEST: 'REQUEST', SUCCESS: 'SUCCESS', FAILURE: 'FAILURE' }
 const setCacheValue = (namespace, key, value) => {
@@ -19,7 +21,24 @@ const getCacheValue = (namespace, key, defaultValue = null) => {
 }
 
 //------------ private utils end---------------
-const setApiStatus = (serverName, apiName, status) => setCacheValue(CACHE_NAMESPACES.apiStatus, serverName + apiName, status)
+const emit = (eventName, eventData) => {
+  let subscibers = getCacheValue(CACHE_NAMESPACES.subscribers, eventName, [])
+  subscibers.forEach((s) => {
+    s.handler(eventData)
+  })
+}
+const subscribe = (eventName, key, handler) => {
+  let subscibers = getCacheValue(CACHE_NAMESPACES.subscribers, eventName, [])
+  setCacheValue(CACHE_NAMESPACES.subscribers, eventName, subscibers.concat({ key, handler }))
+}
+const unSubscribe = (eventName, key) => {
+  let subscibers = getCacheValue(CACHE_NAMESPACES.subscribers, eventName, []).filter((s) => s.key !== key)
+  setCacheValue(CACHE_NAMESPACES.subscribers, eventName, subscibers)
+}
+const setApiStatus = (serverName, apiName, status) => {
+  setCacheValue(CACHE_NAMESPACES.apiStatus, serverName + apiName, status)
+  emit('API_STATUS_CHANGES', { serverName, apiName, status })
+}
 const getApiStatus = (serverName, apiName) => getCacheValue(CACHE_NAMESPACES.apiStatus, serverName + apiName)
 
 const getServerConfig = (serverName) => {
@@ -130,8 +149,37 @@ const addApis = (data) => {
 // ----------
 // useApiStatus
 // ----------
-const useApiStatus = (data) => {}
+const _getKey = (serverName, apiName) => `${serverName}::${apiName}`
+const ApiStatusContext = React.createContext()
+const ApiStatusProvider = ({ children }) => {
+  const [status, setStatus] = useState({})
+  React.useEffect(() => {
+    subscribe('API_STATUS_CHANGES', 'ApiStatusProvider_fn', (event) => {
+      setStatus((s) => {
+        const { serverName, apiName, status } = event
+        const key = _getKey(serverName, apiName)
+        return produce(s, (draft) => {
+          draft[key] = status
+        })
+      })
+    })
+    return () => {
+      unSubscribe('API_STATUS_CHANGES', 'ApiStatusProvider_fn')
+    }
+  }, [status])
+  return <ApiStatusContext.Provider value={{ status }}>{children}</ApiStatusContext.Provider>
+}
+
+const useApiStatus = (apiName, serverName = 'base') => {
+  const key = _getKey(serverName, apiName)
+  let contextData = useContext(ApiStatusContext)
+  return get(contextData, ['status', key], null)
+}
+
+window.get = () => {
+  console.log(_cache)
+}
 
 const apiService = new Proxy({}, apiServiceHandler)
 
-export { config, addApis, useApiStatus, apiService }
+export { config, addApis, useApiStatus, apiService, ApiStatusProvider }
