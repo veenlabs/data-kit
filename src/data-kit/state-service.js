@@ -138,7 +138,21 @@ const getAllSagasOfSlice = (slice) => {
   return sagas
 }
 
+// case 1 getUser: apiService.getUser
 const isHandlerAnAPI = (handler) => typeof handler === 'function' && get(handler, '__type') === 'api_service'
+
+// case 2 getUser: [apiService.getUser, takeAll]
+const isHandlerAnAPIArr = (handler) => Array.isArray(handler) && isHandlerAnAPI(handler[0])
+
+// case 3 getUser: [apiService.getUser, takeAll]
+const isHandlerAnAPIObject = (handler) => {
+  const api = get(handler, ['api'])
+  return !!api && isHandlerAnAPI(api)
+}
+
+const isHandlerRequireAutoSaga = (handler) => {
+  return isHandlerAnAPI(handler) || isHandlerAnAPIArr(handler) || isHandlerAnAPIObject(handler)
+}
 
 // 3
 const getHandlerPath = (sliceName, actionName, step) => {
@@ -220,32 +234,54 @@ const setup = (setupProps) => {
 // create slice
 // ---------------
 const createSlice = (slice) => {
-  const _createSaga = (actionName, apiService) => {
+  const _createSaga = (actionName, handler) => {
+    let action = '',
+      sagaEffect = DEFAULT_PREFERENCES.defaultSagaEffect,
+      extraOptions = {}
+    //case
+    if (isHandlerAnAPI(handler)) {
+      action = handler
+    } else if (isHandlerAnAPIArr(handler)) {
+      action = handler[0]
+      sagaEffect = handler[1]
+    } else if (isHandlerAnAPIObject(handler)) {
+      action = handler.api
+      extraOptions = handler.extraOptions
+    }
+
     const saga = function* () {
-      const result = yield call(apiService)
+      const result = yield call(action)
       let path = [slice.name, actionName, 'success']
       yield put({
         type: path.join(ACTION_SEPARATION_CHARS),
         payload: result,
       })
     }
-    return saga
+    return { saga, sagaEffect, extraOptions }
   }
 
   const actions = omit(slice, CONFIG_PROPS_OF_SLICE)
   for (let actionName in actions) {
     const action = actions[actionName]
     // handler is top level api call
-    if (isHandlerAnAPI(action)) {
-      const saga = _createSaga(actionName, action)
-      const reducer = (action, { payload }) => payload
+    const reducer = (action, { payload }) => payload
+    if (isHandlerRequireAutoSaga(action)) {
+      const { saga, sagaEffect, extraOptions } = _createSaga(actionName, action)
       set(slice, [actionName, 'request', 'saga'], saga)
+      set(slice, [actionName, 'request', 'sagaEffect'], sagaEffect)
+      set(slice, [actionName, 'request', 'extraOptions'], extraOptions)
       set(slice, [actionName, 'success', 'reducer'], reducer)
     } else {
       const requestStep = get(slice, [actionName, 'request'])
-      if (isHandlerAnAPI(requestStep)) {
-        const saga = _createSaga(actionName, requestStep)
+      if (isHandlerRequireAutoSaga(requestStep)) {
+        const { saga, sagaEffect, extraOptions } = _createSaga(actionName, requestStep)
         set(slice, [actionName, 'request', 'saga'], saga)
+        set(slice, [actionName, 'request', 'sagaEffect'], sagaEffect)
+        set(slice, [actionName, 'request', 'extraOptions'], extraOptions)
+        // if reducer not defined then add it
+        if (!get(slice, [actionName, 'success', 'reducer'])) {
+          set(slice, [actionName, 'success', 'reducer'], reducer)
+        }
       }
     }
   }
