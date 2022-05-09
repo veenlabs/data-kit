@@ -84,6 +84,27 @@ const getReducerFromAction = (slice, actionType) => {
   return reducer
 }
 
+// Saga Wrapper. This wraps user sagas
+function commonSaga(saga, processors, extraOptions) {
+  return function* (request) {
+    const { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga } = processors
+    if (beforeHandleSaga) {
+      yield beforeHandleSaga(request, extraOptions)
+    }
+    try {
+      yield saga(request)
+      if (afterSuccessHandleSaga) {
+        yield afterSuccessHandleSaga(request, extraOptions)
+      }
+    } catch (error) {
+      console.log(error)
+      if (afterFailHandleSaga) {
+        yield afterFailHandleSaga(request, extraOptions)
+      }
+    }
+  }
+}
+
 // 5
 const getAllSagasOfSlice = (slice) => {
   // returns a list of all sagas of a slice
@@ -93,6 +114,8 @@ const getAllSagasOfSlice = (slice) => {
   const sagas = []
   const sliceName = slice.name
 
+  const { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga } = getCacheValue('setup', 'setup') || {}
+  const processors = { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga }
   for (let actionName in actions) {
     const steps = [undefined, 'request', 'success', 'failure']
 
@@ -101,10 +124,12 @@ const getAllSagasOfSlice = (slice) => {
     for (let step of steps) {
       const path = getHandlerPath(sliceName, actionName, step)
       const saga = get(slice, [...path, 'saga'])
+      const extraOptions = get(slice, [...path, 'extraOptions'])
       if (saga) {
         const type = produceAction(sliceName, actionName, step)().type
         if (!pushedTypes[type]) {
-          sagas.push([type, saga, get(get(slice, [...path, 'sagaEffect']))])
+          const wrappedSaga = commonSaga(saga, processors, extraOptions)
+          sagas.push([type, wrappedSaga, get(get(slice, [...path, 'sagaEffect']))])
           pushedTypes[type] = type
         }
       }
@@ -180,7 +205,16 @@ const _useActionsProxyHandler = {
 // ---------------
 // setup
 // ---------------
-const setup = () => {}
+const setup = (setupProps) => {
+  /**
+   * setupProps :{
+   *  beforeHandleSaga: function*(){}
+   *  afterSuccessHandleSaga: function*(){}
+   *  afterFailHandleSaga: function*(){}
+   * }
+   */
+  setCacheValue('setup', 'setup', setupProps)
+}
 
 // ---------------
 // create slice
