@@ -10,6 +10,7 @@ import { default as set } from 'lodash/set'
 //------------ Config ---------------
 
 const ACTION_SEPARATION_CHARS = ':@'
+const RESET_ACTION_TYPE = '__lib_reset'
 const CONFIG_PROPS_OF_SLICE = ['name', 'initialState', 'selectors']
 let DEFAULT_PREFERENCES = {
   loggingEnabled: true,
@@ -53,16 +54,20 @@ const getSlice = (sliceName) => getCacheValue('slices', sliceName)
 const produceReducerForSlice = (slice) => {
   const { name, initialState, selectors } = slice
   return (state = initialState, action) => {
-    const reducer = getReducerFromAction(slice, action.type)
-    if (reducer) {
-      const newState = reducer(state, action)
-      if (typeof newState === 'undefined') {
-        return state
+    if (action.type === RESET_ACTION_TYPE) {
+      return initialState
+    } else {
+      const reducer = getReducerFromAction(slice, action.type)
+      if (reducer) {
+        const newState = reducer(state, action)
+        if (typeof newState === 'undefined') {
+          return state
+        }
+        return newState
       }
-      return newState
-    }
 
-    return state
+      return state
+    }
   }
 }
 
@@ -284,6 +289,20 @@ const useActions = (sliceName) => {
   return value
 }
 
+const useReset = () => {
+  /**
+   * const { reset } = useReset()
+   */
+  const dispatch = useDispatch()
+  return {
+    reset: () => {
+      dispatch({
+        type: RESET_ACTION_TYPE,
+      })
+    },
+  }
+}
+
 // ---------------
 // use selector
 // ---------------
@@ -291,4 +310,4 @@ const useStateService = () => {
   return null
 }
 
-export { setup, createSlice, configureStore, useActions, useStateService, getActions }
+export { setup, createSlice, configureStore, useActions, useStateService, getActions, useReset }
