@@ -14,6 +14,9 @@ describe('Test cache', function() {
 
     setCache('test', 'key2', 2)
     assert.equal(getCache('test','key2'),2)
+
+    // different namespace
+    assert.equal(getCache('test2','key2','def'),'def')
   })
 
   it('should return default value if key is not set',()=>{
