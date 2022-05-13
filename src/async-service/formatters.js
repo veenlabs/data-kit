@@ -13,8 +13,8 @@ function formatApiOperation(options, provider) {
   }
 
   let finalOptions = {
-    url: serverConfig.baseUrl + url,
-    headers: serverConfig.commonHeaders,
+    url: provider.baseUrl + url,
+    headers: provider.commonHeaders,
     method,
   }
 
