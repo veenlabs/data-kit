@@ -1,8 +1,7 @@
-import assert from 'assert';
+import assert from 'assert'
 import { getCache, setCache, resetCache, getCacheWithProduceFn } from '../src/helpers/cache'
 
 describe('Test cache', function () {
-
   it('should set and read cache values', () => {
     setCache('test', 'key1', 1)
     assert.equal(getCache('test', 'key1'), 1)
@@ -30,12 +29,13 @@ describe('Test cache', function () {
     assert.equal(getCache('test', 'key4', 'def'), 'def')
   })
 
-  it('should set cache if it doesn\'t exixts', () => {
-    assert.equal(getCacheWithProduceFn('test', 'key4', () => {
-      return 32
-    }), 32)
+  it("should set cache if it doesn't exixts", () => {
+    assert.equal(
+      getCacheWithProduceFn('test', 'key4', () => {
+        return 32
+      }),
+      32,
+    )
     assert.equal(getCache('test', 'key4'), 32)
-
   })
-
-});
+})

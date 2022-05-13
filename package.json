@@ -4,7 +4,7 @@
   "private": true,
   "main": "src/index.js",
   "scripts": {
-    "lint:fix": "prettier --write src/*.js src/**/*.js src/**/**/*.js src/**/**/**/*.js",
+    "lint:fix": "prettier --write src/*.js src/**/*.js src/**/**/*.js src/**/**/**/*.js tests/*.test.js",
     "test": "mocha --require @babel/register  tests/*.test.js"
   },
   "peerDependencies": {
