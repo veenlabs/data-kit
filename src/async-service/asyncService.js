@@ -75,7 +75,7 @@ const asynServiceHandler = {
       })
     } else {
       try {
-        return proxy2[prop]()
+        return proxy2[prop]
       } catch (error) {}
     }
   },
