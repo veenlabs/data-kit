@@ -15,4 +15,4 @@ function getOperationOptions(providerName, operationName) {
   return get(operations, [operationName], null)
 }
 
-export { getProviderConfig, getOperationOptions }
+export { getProviderConfig, getOperationOptions, getOperations }
