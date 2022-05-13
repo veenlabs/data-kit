@@ -1,4 +1,4 @@
-function formatApiOperation(provider, options) {
+function formatApiOperation(options, provider) {
   let method = 'get'
   let url = ''
 
