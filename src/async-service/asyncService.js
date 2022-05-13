@@ -8,7 +8,7 @@ import { setOperationStatus } from './operationStatus'
 
 const _identity = (v) => v
 const _identity2 = (par, v) => par(v)
-const _identity3 = (v) => v
+const _identity3 = async (v) => v
 
 const getBeforeRequestBeforeRequest = (requestOptions, provider) => {
   const beforeRequestPar = get(provider, 'beforeRequest', _identity)
