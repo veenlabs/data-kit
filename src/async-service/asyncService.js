@@ -10,12 +10,12 @@ const _identity = (v) => v
 const _chain = (par, v) => par(v)
 const _identity3 = async (v) => v
 
-const getBeforeRequestBeforeRequest = (requestOptions, provider) => {
+const getBeforeRequestBeforeSuccess = (operationOptions, provider) => {
   const beforeRequestPar = get(provider, 'beforeRequest', _identity)
-  const beforeRequestCh = get(requestOptions, 'beforeRequest', _chain)
+  const beforeRequestCh = get(operationOptions, 'beforeRequest', _chain)
 
   const beforeSuccessPar = get(provider, 'beforeSuccess', _identity)
-  const beforeSuccessCh = get(requestOptions, 'beforeSuccess', _chain)
+  const beforeSuccessCh = get(operationOptions, 'beforeSuccess', _chain)
 
   const beforeRequest = (options) => {
     return beforeRequestCh(beforeRequestPar, options)
@@ -38,13 +38,12 @@ const handler2 = {
     const options = getOperationOptions(providerName, operationName)
     let formatOperation = get(provider, ['formatOperation'])
     let runAsyncOperation = get(provider, ['runAsyncOperation'])
+    const { beforeRequest, beforeSuccess } = getBeforeRequestBeforeSuccess(options, provider)
 
     formatOperation = !!formatOperation ? formatOperation : providerType == ASYNC_SERVICE_PROVIDER_WEB_API_TYPE ? formatApiOperation : _identity
     runAsyncOperation = !!runAsyncOperation ? runAsyncOperation : providerType == ASYNC_SERVICE_PROVIDER_WEB_API_TYPE ? axios : _identity3
 
     let requestOptions = formatOperation(options, provider)
-    const { beforeRequest, beforeSuccess } = getBeforeRequestBeforeRequest(requestOptions, provider)
-
     requestOptions = beforeRequest(requestOptions)
 
     const serviceRequestHandler = async () => {
