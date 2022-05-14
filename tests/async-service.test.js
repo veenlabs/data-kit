@@ -255,4 +255,206 @@ describe.only('Test async service', function () {
     let read = await asyncService.n1.read()
     assert.equal(read.success.extra, 1)
   })
+
+  it("Should call operation's beforeRequest, beforeSuccess", async function () {
+    addConfiguration({
+      url: 'http://msn.com',
+      runAsyncOperation: async (options) => {
+        return options
+      },
+    })
+
+    addConfiguration({
+      name: 'n1',
+      url: 'http://google.com',
+      runAsyncOperation: async (options) => {
+        return options
+      },
+    })
+
+    addOperations({
+      add: {
+        url: 'add',
+        name: 'praveen',
+        beforeRequest: (parentFn, options) => {
+          return { ...options, childReq: 1 }
+        },
+        beforeSuccess: (parentFn, result) => {
+          return { ...result, childSuc: 2 }
+        },
+      },
+      remove: { url: 'remove', name: 'praveen' },
+    })
+
+    addOperations({
+      _config: {
+        providerName: 'n1',
+      },
+      update: { url: 'update', name: 'praveen' },
+      read: {
+        url: 'read',
+        name: 'praveenprasad',
+        beforeRequest: (parentFn, options) => {
+          return { ...options, childReq: 3 }
+        },
+        beforeSuccess: (parentFn, result) => {
+          return { ...result, childSuc: 4 }
+        },
+      },
+    })
+
+    const add = await asyncService.add()
+    assert.equal(add.childReq, 1)
+    assert.equal(add.url, 'add')
+    assert.equal(add.childSuc, 2)
+    assert.equal(add.name, 'praveen')
+
+    const read = await asyncService.n1.read()
+    assert.equal(read.childReq, 3)
+    assert.equal(read.url, 'read')
+    assert.equal(read.childSuc, 4)
+    assert.equal(read.name, 'praveenprasad')
+  })
+
+  it("Should call configuration's beforeRequest, beforeSuccess", async function () {
+    addConfiguration({
+      url: 'http://msn.com',
+      runAsyncOperation: async (options) => {
+        return options
+      },
+      beforeRequest: (options) => {
+        return { ...options, parentReq: 1 }
+      },
+      beforeSuccess: (result) => {
+        return { ...result, parentSuc: 2 }
+      },
+    })
+
+    addConfiguration({
+      name: 'n1',
+      url: 'http://google.com',
+      runAsyncOperation: async (options) => {
+        return options
+      },
+      beforeRequest: (options) => {
+        return { ...options, parentReq: 3 }
+      },
+      beforeSuccess: (result) => {
+        return { ...result, parentSuc: 4 }
+      },
+    })
+
+    addOperations({
+      add: {
+        url: 'add',
+        name: 'praveen',
+      },
+      remove: { url: 'remove', name: 'praveen' },
+    })
+
+    addOperations({
+      _config: {
+        providerName: 'n1',
+      },
+      update: { url: 'update', name: 'praveen' },
+      read: {
+        url: 'read',
+        name: 'praveenprasad',
+      },
+    })
+
+    const add = await asyncService.add()
+    assert.equal(add.parentReq, 1)
+    assert.equal(add.url, 'add')
+    assert.equal(add.parentSuc, 2)
+    assert.equal(add.name, 'praveen')
+
+    const read = await asyncService.n1.read()
+    assert.equal(read.parentReq, 3)
+    assert.equal(read.url, 'read')
+    assert.equal(read.parentSuc, 4)
+    assert.equal(read.name, 'praveenprasad')
+  })
+
+  it("Should call configuration's and operation's beforeRequest, beforeSuccess", async function () {
+    addConfiguration({
+      url: 'http://msn.com',
+      runAsyncOperation: async (options) => {
+        return options
+      },
+      beforeRequest: (options) => {
+        return { ...options, parentReq: 1 }
+      },
+      beforeSuccess: (result) => {
+        return { ...result, parentSuc: 2 }
+      },
+    })
+
+    addConfiguration({
+      name: 'n1',
+      url: 'http://google.com',
+      runAsyncOperation: async (options) => {
+        return options
+      },
+      beforeRequest: (options) => {
+        return { ...options, parentReq: 3 }
+      },
+      beforeSuccess: (result) => {
+        return { ...result, parentSuc: 4 }
+      },
+    })
+
+    addOperations({
+      add: {
+        url: 'add',
+        name: 'praveen',
+        beforeRequest: (parentFn, options) => {
+          return { ...parentFn(options), childReq: 1 }
+        },
+        beforeSuccess: (parentFn, result) => {
+          return { ...parentFn(result), childSuc: 2 }
+        },
+      },
+      remove: { url: 'remove', name: 'praveen' },
+    })
+
+    addOperations({
+      _config: {
+        providerName: 'n1',
+      },
+      update: { url: 'update', name: 'praveen' },
+      read: {
+        url: 'read',
+        name: 'praveenprasad',
+        beforeRequest: (parentFn, options) => {
+          return { ...parentFn(options), childReq: 3 }
+        },
+        beforeSuccess: (parentFn, result) => {
+          return { ...parentFn(result), childSuc: 4 }
+        },
+      },
+    })
+
+    const add = await asyncService.add()
+    assert.equal(add.parentReq, 1)
+    assert.equal(add.url, 'add')
+    assert.equal(add.parentSuc, 2)
+    assert.equal(add.name, 'praveen')
+    assert.equal(add.childReq, 1)
+    assert.equal(add.childSuc, 2)
+
+    const read = await asyncService.n1.read()
+    assert.equal(read.parentReq, 3)
+    assert.equal(read.url, 'read')
+    assert.equal(read.parentSuc, 4)
+    assert.equal(read.name, 'praveenprasad')
+    assert.equal(read.childReq, 3)
+    assert.equal(read.childSuc, 4)
+  })
 })
+
+// Add coverage for config level, operation level
+/**
+ * beforeRequest
+ * beforeSuccess
+ */
