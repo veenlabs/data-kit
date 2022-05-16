@@ -82,21 +82,21 @@ function formatHandler(sliceName, actionName, handler) {
   }
 }
 
-function commonSaga(saga, processors, extraOptions) {
-  return function* (request) {
-    const { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga } = processors
+function commonSaga(saga, extraOptions) {
+  return function* (action) {
+    const { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga } = getAllPreferences()
     if (beforeHandleSaga) {
-      yield beforeHandleSaga(request, extraOptions)
+      yield beforeHandleSaga(action, extraOptions)
     }
     try {
-      yield saga(request)
+      yield saga(action)
       if (afterSuccessHandleSaga) {
-        yield afterSuccessHandleSaga(request, extraOptions)
+        yield afterSuccessHandleSaga(action, extraOptions)
       }
     } catch (error) {
       console.log(error)
       if (afterFailHandleSaga) {
-        yield afterFailHandleSaga(request, extraOptions)
+        yield afterFailHandleSaga(action, extraOptions)
       }
     }
   }
@@ -106,23 +106,20 @@ const getAllSagas = (sliceName, formattedActions) => {
   let sagas = []
   let actionNames = Object.keys(formattedActions)
 
-  const { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga } = getAllPreferences()
-  const processors = { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga }
-
   for (let actionName of actionNames) {
     let handler = formattedActions[actionName]
 
     let path = [sliceName, actionName]
     if (handler.saga) {
       const actionType = getActionTypeFromPath(path)
-      const wrappedSaga = commonSaga(handler.saga, processors, handler.extraOptions)
+      const wrappedSaga = commonSaga(handler.saga, handler.extraOptions)
       sagas = sagas.concat([[actionType, wrappedSaga, handler.sagaEffect]])
     } else if (handlerHasSteps(handler)) {
       let stepNames = Object.keys(handler)
       for (let stepName of stepNames) {
         const stepHandler = handler[stepName]
         if (stepHandler.saga) {
-          const wrappedSaga = commonSaga(stepHandler.saga, processors, stepHandler.extraOptions)
+          const wrappedSaga = commonSaga(stepHandler.saga, stepHandler.extraOptions)
 
           // extra saga for first step
           if (stepName === 'request') {

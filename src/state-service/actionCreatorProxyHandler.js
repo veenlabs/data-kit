@@ -1,5 +1,4 @@
 import { getActionTypeFromPath, handlerHasSteps, isObjectReactSyntheticEvent } from './utils'
-import { get } from '../helpers/lodash'
 
 const handlerHasStepsByActionName = (actionName, slice) => {
   const handler = slice['actions'][actionName]
