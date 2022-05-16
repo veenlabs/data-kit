@@ -18,7 +18,7 @@ const handlerHasSteps = (handler) => {
 
 const isValueAHandler = (value) => Object.keys(value).some((k) => ['reducer', 'saga', 'extraOptions'].indexOf(k) > -1)
 const isHandlerAPIRequest = (handler) => handler.__type === ASYNC_SERVICE_HANDLER_TYPE
-const isHandlerComplexAPIRequest = (handler) => handler.length > 0 && isHandlerAPIRequest(handler[0])
+const isHandlerComplexAPIRequest = (handler) => Array.isArray(handler) && handler.length > 0 && isHandlerAPIRequest(handler[0])
 
 function formatHandler(sliceName, actionName, handler) {
   // case 1
