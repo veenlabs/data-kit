@@ -5,16 +5,7 @@ import { get } from '../helpers/lodash'
 import { setCache } from '../helpers/cache'
 import { getPreferences } from './setup'
 import actionsProxyHandler from './actionCreatorProxyHandler'
-import { getActionTypeFromPath, getPathFromActionType } from './utils'
-
-const handlerHasSteps = (handler) => {
-  if (Object.keys(handler).some((k) => ['request', 'failure', 'success'].indexOf(k) > -1)) {
-    return true
-  } else if (handler.stepsInFuture) {
-    return true
-  }
-  return false
-}
+import { getActionTypeFromPath, getPathFromActionType, handlerHasSteps } from './utils'
 
 const isValueAHandler = (value) => Object.keys(value).some((k) => ['reducer', 'saga', 'extraOptions'].indexOf(k) > -1)
 const isHandlerAPIRequest = (handler) => handler.__type === ASYNC_SERVICE_HANDLER_TYPE

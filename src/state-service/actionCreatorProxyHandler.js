@@ -1,4 +1,4 @@
-import { getActionTypeFromPath, getPathFromActionType } from './utils'
+import { getActionTypeFromPath, handlerHasSteps } from './utils'
 
 const handlerHasStepsByActionName = (actionName, slice) => {
   const handler = slice['actions'][actionName]
