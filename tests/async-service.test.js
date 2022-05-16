@@ -3,7 +3,7 @@ import { addConfiguration, addOperations, asyncService } from '../src/async-serv
 import { getOperations, getProviderConfig } from '../src/async-service/utils'
 import { resetCache } from '../src/helpers/cache'
 
-describe.only('Test async service', function () {
+describe('Test async service', function () {
   this.beforeEach(() => {
     resetCache()
   })
