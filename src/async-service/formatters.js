@@ -2,11 +2,12 @@ function formatApiOperation(options, provider) {
   let method = 'get'
   let url = ''
 
+  console.log({ options })
   if (typeof options === 'string') {
     url = options
   } else if (options.length > 0) {
-    method = options[0]
-    url = options[1]
+    url = options[0]
+    method = options[1]
   } else {
     method = options.method
     url = options.url
