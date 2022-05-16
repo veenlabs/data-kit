@@ -1,3 +1,5 @@
+import { get } from '../helpers/lodash'
+
 const getActionTypeFromPath = (path = []) => {
   return path.join('::')
 }
@@ -14,4 +16,8 @@ const handlerHasSteps = (handler) => {
   return false
 }
 
-export { getActionTypeFromPath, getPathFromActionType, handlerHasSteps }
+const isObjectReactSyntheticEvent = (obj) => {
+  return get(obj, ['constructor', 'name']) === 'SyntheticBaseEvent'
+}
+
+export { getActionTypeFromPath, getPathFromActionType, handlerHasSteps, isObjectReactSyntheticEvent }

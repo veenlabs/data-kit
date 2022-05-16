@@ -1,9 +1,9 @@
 import produce from 'immer'
 import { call, put, takeLatest } from 'redux-saga/effects'
-import { ASYNC_SERVICE_HANDLER_TYPE, CACHE_NAMESPACES, STATE_SERVICE_RESET_ACTION } from '../helpers/const'
+import { ASYNC_SERVICE_HANDLER_TYPE, CACHE_NAMESPACES, STATE_SERVICE_RESET_ACTION_STATE } from '../helpers/const'
 import { get } from '../helpers/lodash'
 import { setCache } from '../helpers/cache'
-import { getPreferences } from './setup'
+import { getAllPreferences, getPreferences } from './setup'
 import actionsProxyHandler from './actionCreatorProxyHandler'
 import { getActionTypeFromPath, getPathFromActionType, handlerHasSteps } from './utils'
 
@@ -82,9 +82,32 @@ function formatHandler(sliceName, actionName, handler) {
   }
 }
 
+function commonSaga(saga, processors, extraOptions) {
+  return function* (request) {
+    const { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga } = processors
+    if (beforeHandleSaga) {
+      yield beforeHandleSaga(request, extraOptions)
+    }
+    try {
+      yield saga(request)
+      if (afterSuccessHandleSaga) {
+        yield afterSuccessHandleSaga(request, extraOptions)
+      }
+    } catch (error) {
+      console.log(error)
+      if (afterFailHandleSaga) {
+        yield afterFailHandleSaga(request, extraOptions)
+      }
+    }
+  }
+}
+
 const getAllSagas = (sliceName, formattedActions) => {
   let sagas = []
   let actionNames = Object.keys(formattedActions)
+
+  const { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga } = getAllPreferences()
+  const processors = { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga }
 
   for (let actionName of actionNames) {
     let handler = formattedActions[actionName]
@@ -92,25 +115,29 @@ const getAllSagas = (sliceName, formattedActions) => {
     let path = [sliceName, actionName]
     if (handler.saga) {
       const actionType = getActionTypeFromPath(path)
-      sagas = sagas.concat([[actionType, handler.saga, handler.sagaEffect]])
+      const wrappedSaga = commonSaga(handler.saga, processors, handler.extraOptions)
+      sagas = sagas.concat([[actionType, wrappedSaga, handler.sagaEffect]])
     } else if (handlerHasSteps(handler)) {
       let stepNames = Object.keys(handler)
       for (let stepName of stepNames) {
         const stepHandler = handler[stepName]
         if (stepHandler.saga) {
+          const wrappedSaga = commonSaga(stepHandler.saga, processors, stepHandler.extraOptions)
+
           // extra saga for first step
           if (stepName === 'request') {
             const actionType = getActionTypeFromPath(path)
-            sagas = sagas.concat([[actionType, stepHandler.saga, stepHandler.sagaEffect]])
+            sagas = sagas.concat([[actionType, wrappedSaga, stepHandler.sagaEffect]])
           }
 
           path.push(stepName)
           const actionType = getActionTypeFromPath(path)
-          sagas = sagas.concat([[actionType, stepHandler.saga, stepHandler.sagaEffect]])
+          sagas = sagas.concat([[actionType, wrappedSaga, stepHandler.sagaEffect]])
         }
       }
     }
   }
+
   return sagas
 }
 
@@ -124,7 +151,8 @@ const formatActions = (sliceName, actions) => {
 
 const createReducer = (initialState, sliceName, formattedActions) => {
   const reducer = (state = initialState, action) => {
-    if (action.type === STATE_SERVICE_RESET_ACTION) {
+    // payload should be either empty or it should be same as sliceName
+    if (action.type === STATE_SERVICE_RESET_ACTION_STATE && (action.payload === STATE_SERVICE_RESET_ACTION_STATE || action.payload === sliceName)) {
       return initialState
     } else {
       const [sliceName2, ...path] = getPathFromActionType(action.type)

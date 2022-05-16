@@ -1,4 +1,4 @@
-import { getActionTypeFromPath, handlerHasSteps } from './utils'
+import { getActionTypeFromPath, handlerHasSteps, isObjectReactSyntheticEvent } from './utils'
 import { get } from '../helpers/lodash'
 
 const handlerHasStepsByActionName = (actionName, slice) => {
@@ -12,7 +12,7 @@ const handler = {
     let path = [slice.name, actionName]
     const actionCreator = (data) => {
       // ignore  react events
-      if (get(data, ['constructor', 'name']) === 'SyntheticBaseEvent') {
+      if (isObjectReactSyntheticEvent(data)) {
         data = null
       }
       if (hasSteps) {
