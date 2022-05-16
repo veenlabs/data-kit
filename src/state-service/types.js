@@ -25,12 +25,3 @@ const slice = createSlice({
     },
   },
 })
-
-const userSlice = createSlice()
-//   const getUser = useActions(userSlice.actions.getUser)
-const userReady = useStateSelector(userSlice.selectors.getUsers)
-
-const { getUser } = useActions(userSlice.actions)
-// getUser()
-// userSlice.actions.getUser()
-// userSlice.actions.udateUser.Success()

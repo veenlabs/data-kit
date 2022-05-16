@@ -1,31 +1,12 @@
 import { useDispatch } from 'react-redux'
+import { getCache } from '../helpers/cache'
+import { CACHE_NAMESPACES } from '../helpers/const'
+import actionsProxyHandler from './actionCreatorProxyHandler'
 
-// const _useActionsProxyHandler = {
-//     get(target, actionName, receiver) {
-//       return (payload, step) => {
-//         const { sliceName, dispatch } = target
-//         const actions = getActions(sliceName)
-//         const action = actions[actionName]
-//         dispatch(action(payload, step))
-//       }
-//     },
-//   }
-
-// const useActions = (sliceName) => {
-//     const dispatch = useDispatch()
-//     let value = getCacheValue('useActions', sliceName)
-//     if (!value) {
-//       value = new Proxy({ sliceName, dispatch }, _useActionsProxyHandler)
-//       setCacheValue('useActions', sliceName, value)
-//     }
-//     return value
-//   }
-
-function useActions() {
+function useActions({ name }) {
+  const slice = getCache(CACHE_NAMESPACES.STATE_SERVICE_RAW_SLICES, name)
   const dispatch = useDispatch()
-  return (props) => ({
-    action1: () => dispatch(action()),
-  })
+  return new Proxy({ slice, dispatch }, actionsProxyHandler)
 }
 
 export default useActions

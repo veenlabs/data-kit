@@ -4,6 +4,8 @@ import { ASYNC_SERVICE_HANDLER_TYPE, CACHE_NAMESPACES, STATE_SERVICE_RESET_ACTIO
 import { get } from '../helpers/lodash'
 import { setCache } from '../helpers/cache'
 import { getPreferences } from './setup'
+import actionsProxyHandler from './actionCreatorProxyHandler'
+import { getActionTypeFromPath, getPathFromActionType } from './utils'
 
 const handlerHasSteps = (handler) => {
   if (Object.keys(handler).some((k) => ['request', 'failure', 'success'].indexOf(k) > -1)) {
@@ -12,50 +14,6 @@ const handlerHasSteps = (handler) => {
     return true
   }
   return false
-}
-
-const handlerHasStepsByActionName = (actionName, slice) => {
-  const handler = slice['actions'][actionName]
-  return handlerHasSteps(handler)
-}
-
-const getActionTypeFromPath = (path = []) => {
-  return path.join('::')
-}
-const getPathFromActionType = (actionType = '') => {
-  return actionType.split('::')
-}
-
-const handler = {
-  get({ slice, dispatch }, actionName, receiver) {
-    const hasSteps = handlerHasStepsByActionName(actionName, slice)
-    let path = [slice.name, actionName]
-    const actionCreator = (data) => {
-      if (hasSteps) {
-        path.push('request')
-      }
-      const action = { type: getActionTypeFromPath(path), payload: data }
-      dispatch && dispatch(action)
-      return action
-    }
-    if (hasSteps) {
-      const proxy = new Proxy(
-        { request: 1, success: 1, failure: 1 },
-        {
-          get(target, prop) {
-            return (data) => {
-              path.push(prop)
-              const action = { type: getActionTypeFromPath(path), payload: data }
-              dispatch && dispatch(action)
-              return action
-            }
-          },
-        },
-      )
-      Object.assign(actionCreator, proxy)
-    }
-    return actionCreator
-  },
 }
 
 const isValueAHandler = (value) => Object.keys(value).some((k) => ['reducer', 'saga', 'extraOptions'].indexOf(k) > -1)
@@ -194,10 +152,11 @@ function createSlice(slice = {}) {
   const reducer = createReducer(initialState)
 
   return Object.freeze({
-    actions: new Proxy({ slice }, handler),
+    name,
     sagas: sagas,
     selectors: selectors,
     reducer: reducer,
+    actions: new Proxy({ slice }, actionsProxyHandler),
   })
 }
 
