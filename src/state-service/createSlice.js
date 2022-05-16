@@ -80,23 +80,26 @@ function formatHandler(sliceName, actionName, handler) {
   }
 }
 
-const getAllSagas = (sliceName, formattedActions, stepName) => {
+const getAllSagas = (sliceName, formattedActions) => {
   let sagas = []
   let actionNames = Object.keys(formattedActions)
+
   for (let actionName of actionNames) {
     let handler = formattedActions[actionName]
+
+    let path = [sliceName, actionName]
     if (handler.saga) {
-      let path = [sliceName, actionName]
-      if (stepName) {
-        path.push(stepName)
-      }
       const actionType = getActionTypeFromPath(path)
       sagas = sagas.concat([[actionType, handler.saga, handler.sagaEffect]])
     } else if (handlerHasSteps(handler)) {
       let stepNames = Object.keys(handler)
       for (let stepName of stepNames) {
-        let sagasOfStep = getAllSagas(sliceName, handler[stepName], stepName)
-        sagas = sagas.concat(sagasOfStep)
+        const stepHandler = handler[stepName]
+        if (stepHandler.saga) {
+          path.push(stepName)
+          const actionType = getActionTypeFromPath(path)
+          sagas = sagas.concat([[actionType, stepHandler.saga, stepHandler.sagaEffect]])
+        }
       }
     }
   }
@@ -111,22 +114,23 @@ const formatActions = (sliceName, actions) => {
   return formattedActions
 }
 
-const createReducer = (initialState) => {
+const createReducer = (initialState, sliceName, formattedActions) => {
   const reducer = (state = initialState, action) => {
     if (action.type === STATE_SERVICE_RESET_ACTION) {
       return initialState
     } else {
-      const path = getPathFromActionType(action.type)
-      // [sliceName, actionName, step]
-      path.push('reducer')
-      const reducer = get(formatActions, path, null)
-      if (reducer) {
-        // const newState = reducer(state, action)
-        const newState = produce(state, (draft) => reducer(draft, action))
-        if (typeof newState === 'undefined') {
-          return state
+      const [sliceName2, ...path] = getPathFromActionType(action.type)
+      if (sliceName === sliceName2) {
+        path.push('reducer')
+        const _reducer = get(formattedActions, path, null)
+        if (_reducer) {
+          // const newState = _reducer(state, action)
+          const newState = produce(state, (draft) => _reducer(draft, action))
+          if (typeof newState === 'undefined') {
+            return state
+          }
+          return newState
         }
-        return newState
       }
     }
     return state
@@ -140,7 +144,7 @@ function createSlice(slice = {}) {
 
   const formattedActions = formatActions(name, actions)
   const sagas = getAllSagas(name, formattedActions)
-  const reducer = createReducer(initialState)
+  const reducer = createReducer(initialState, name, formattedActions)
 
   return Object.freeze({
     name,
