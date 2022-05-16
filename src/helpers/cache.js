@@ -20,6 +20,13 @@ function getCacheWithProduceFn(namespace, key, producerFn) {
   return value
 }
 
+// function setCacheWithExtendFn(namespace, key, extendFn) {
+//   let value = getCache(namespace, key)
+//   value = extendFn(value)
+//   setCache(namespace, key, value)
+//   return value
+// }
+
 function resetCache() {
   cache = {}
 }
