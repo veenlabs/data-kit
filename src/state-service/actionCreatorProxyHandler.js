@@ -28,7 +28,7 @@ const handler = {
         {
           get(target, prop) {
             return (data) => {
-              path.push(prop)
+              let path = [slice.name, actionName, prop]
               const action = { type: getActionTypeFromPath(path), payload: data }
               dispatch && dispatch(action)
               return action
