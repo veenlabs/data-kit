@@ -28,7 +28,9 @@ addApis({
   fromReducer: '/2/red',
 })
 
-const initialState = null
+const initialState = {
+  userName: 'Before',
+}
 
 // data slices
 const slice = createSlice({
@@ -36,8 +38,14 @@ const slice = createSlice({
   name: 'user',
   initialState: initialState,
   selectors: {
-    getIsSet: (user) => !!user,
-    getFullName: (user, state) => user.fullName, // read propery
+    getIsSet: (user) => !!user.user,
+    getFullName: (user, state) => {
+      // if (user.user == 'zpraveen') {
+      //   // throw Error('Hello12')
+      //   return user.user.c.c.c
+      // }
+      return user.user
+    }, // read propery
     getUserWithRoles: (user, state) => ({ user, roles: state.roles }), //read full state
     getEmail: 'profile.fullName', // path in user object
     getQuickInfo: { fullName: 'fullName', email: 'email' },
@@ -47,10 +55,17 @@ const slice = createSlice({
   authenticate: {
     request: {
       reducer: (state, { payload }) => {
-        return state
+        console.log(state.user)
+        state.user = (state.user ? state.user : '') + payload.user
+        // return state
+        // return payload
       },
-      saga: function* () {
-        console.log('MAKE API CALL. SHOULD COME HERE')
+      saga: function* ({ payload }) {
+        console.log('MAKE API CALL. SHOULD COME HERE', payload)
+      },
+      extraOptions: {
+        a: 1,
+        b: 2,
       },
     },
     success: {

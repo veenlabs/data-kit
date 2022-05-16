@@ -183,4 +183,4 @@ const useApiStatus = (apiName, serverName = 'base') => {
 
 const apiService = new Proxy({}, apiServiceHandler)
 
-export { config, addApis, useApiStatus, apiService, ApiStatusProvider }
+export { config, addApis, apiService, useApiStatus, ApiStatusProvider }

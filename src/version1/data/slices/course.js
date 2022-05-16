@@ -1,5 +1,5 @@
 import { createSlice, getActions } from '@veenlabs/data-kit/state-service'
-import { call, put } from 'redux-saga/effects'
+import { call, put, takeEvery } from 'redux-saga/effects'
 import { apiService, addApis } from '@veenlabs/data-kit/api-service'
 
 // Apis
@@ -10,7 +10,9 @@ addApis({
 const slice = createSlice({
   name: 'courses',
   initialState: [],
-  selectors: {},
+  selectors: {
+    courseList: (state) => state.map((s) => s.fullName),
+  },
   getCourses: apiService.getCourses,
   getCourses2: {
     request: {
@@ -18,10 +20,12 @@ const slice = createSlice({
         const result = yield call(apiService.getCourses)
         yield put(getActions('courses').getCourses2(result, 'success'))
       },
+      extraOptions: { getCourses2: 'request' },
     },
     success: {
       reducer: (actions, { payload }) => {
-        return { getCourses2: payload }
+        // return { getCourses2: payload }
+        return payload
       },
     },
   },
@@ -32,6 +36,11 @@ const slice = createSlice({
         return { getCourses3: payload }
       },
     },
+  },
+  getCourses4: [apiService.getCourses, takeEvery],
+  getCourses5: {
+    api: apiService.getCourses,
+    extraOptions: { a: 1, b: 2, ceeeed: 3 },
   },
 })
 
