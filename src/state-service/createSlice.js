@@ -63,9 +63,10 @@ function formatHandler(sliceName, actionName, handler) {
     }
     return {
       request: {
-        saga: function* () {
-          let path = [slice.name, actionName, 'success']
-          const result = yield call(action)
+        // this saga is auto generated
+        saga: function* ({ payload }) {
+          let path = [sliceName, actionName, 'success']
+          let result = yield call(action, payload)
           yield put({
             type: getActionTypeFromPath(path),
             payload: result,
@@ -74,6 +75,7 @@ function formatHandler(sliceName, actionName, handler) {
         sagaEffect,
       },
       success: {
+        // this reducer is auto generated
         reducer: (action, { payload }) => payload,
       },
     }
@@ -96,6 +98,12 @@ const getAllSagas = (sliceName, formattedActions) => {
       for (let stepName of stepNames) {
         const stepHandler = handler[stepName]
         if (stepHandler.saga) {
+          // extra saga for first step
+          if (stepName === 'request') {
+            const actionType = getActionTypeFromPath(path)
+            sagas = sagas.concat([[actionType, stepHandler.saga, stepHandler.sagaEffect]])
+          }
+
           path.push(stepName)
           const actionType = getActionTypeFromPath(path)
           sagas = sagas.concat([[actionType, stepHandler.saga, stepHandler.sagaEffect]])

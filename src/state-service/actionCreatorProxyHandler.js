@@ -1,4 +1,5 @@
 import { getActionTypeFromPath, handlerHasSteps } from './utils'
+import { get } from '../helpers/lodash'
 
 const handlerHasStepsByActionName = (actionName, slice) => {
   const handler = slice['actions'][actionName]
@@ -10,6 +11,10 @@ const handler = {
     const hasSteps = handlerHasStepsByActionName(actionName, slice)
     let path = [slice.name, actionName]
     const actionCreator = (data) => {
+      // ignore  react events
+      if (get(data, ['constructor', 'name']) === 'SyntheticBaseEvent') {
+        data = null
+      }
       if (hasSteps) {
         path.push('request')
       }
