@@ -9,8 +9,8 @@ const handlerHasStepsByActionName = (actionName, slice) => {
 const handler = {
   get({ slice, dispatch }, actionName, receiver) {
     const hasSteps = handlerHasStepsByActionName(actionName, slice)
-    let path = [slice.name, actionName]
     const actionCreator = (data) => {
+      let path = [slice.name, actionName]
       // ignore  react events
       if (isObjectReactSyntheticEvent(data)) {
         data = null
