@@ -43,10 +43,10 @@ const handler2 = {
     formatOperation = !!formatOperation ? formatOperation : providerType == ASYNC_SERVICE_PROVIDER_WEB_API_TYPE ? formatApiOperation : _identity
     runAsyncOperation = !!runAsyncOperation ? runAsyncOperation : providerType == ASYNC_SERVICE_PROVIDER_WEB_API_TYPE ? axios : _identity3
 
-    let requestOptions = formatOperation(options, provider)
-    requestOptions = beforeRequest(requestOptions)
+    const serviceRequestHandler = async (data) => {
+      let requestOptions = formatOperation(options, provider, data)
+      requestOptions = beforeRequest(requestOptions, data)
 
-    const serviceRequestHandler = async () => {
       setOperationStatus(providerName, operationName, ASYNC_SERVICE_STATUSES.REQUEST)
       try {
         const result = await runAsyncOperation(requestOptions)
