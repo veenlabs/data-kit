@@ -9,6 +9,7 @@ import ApiCallSample from './components/ApiCallSample'
 import AuthDemo from './components/AuthDemo'
 import CoursesDemo from './components/CoursesDemo'
 import Invalids from './components/Invalids'
+import MoreWaysToAccess from './components/MoreWaysToAccess'
 
 const { AsyncServiceStatusProvider } = AsyncService
 
@@ -16,8 +17,9 @@ const Main = () => {
   return (
     <Provider store={store}>
       <AsyncServiceStatusProvider>
+        <MoreWaysToAccess />
         <AuthDemo />
-        <Invalids />
+        {/* <Invalids /> */}
         <CoursesDemo />
         <ApiCallSample />
       </AsyncServiceStatusProvider>

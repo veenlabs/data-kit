@@ -6,6 +6,11 @@ const slice = createSlice({
   name: 'courses',
   actions: {
     getCourses4: asyncService.getCourses4,
+    getCourses: {
+      reducer: () => {
+        console.log('Reducer:getCourses')
+      },
+    },
   },
 })
 
