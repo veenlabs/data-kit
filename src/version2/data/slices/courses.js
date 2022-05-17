@@ -4,7 +4,9 @@ const { createSlice } = StateService
 
 const slice = createSlice({
   name: 'courses',
-  // actions:asyncService.getCourses
+  actions: {
+    getCourses4: asyncService.getCourses4,
+  },
 })
 
 export default slice

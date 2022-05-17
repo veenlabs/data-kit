@@ -18,6 +18,12 @@ addOperations({
   getCourses: '/api/v1/courses/',
   getCourses2: ['/api/v1/courses/'],
   getCourses3: ['/api/v1/courses/', 'post'],
+  getCourses4: {
+    url: '/api/v1/courses/',
+    beforeSuccess: (parentFn, response) => {
+      return parentFn(response).data
+    },
+  },
   authenticate1: '/api/v1/users/authenticate',
   authenticate2: ['/api/v1/users/authenticate', 'post'],
 })

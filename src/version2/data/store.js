@@ -1,12 +1,20 @@
-// import { StateService } from '@veen/data-kit'
-// import userSlice from './slices/user'
-// import courseSlice from './slices/courses'
+import { StateService } from '@veen/data-kit'
+import userSlice from './slices/user'
+import courseSlice from './slices/courses'
 
-// const { configureStore } = StateService
-// const store = configureStore(userSlice, courseSlice)
+const { configureStore, setup } = StateService
 
-// export default store
+setup({
+  // loggingEnabled: false,
+  beforeHandleSaga: function* (action, extraOptions) {
+    console.log({ action, extraOptions })
+    console.log('Saga starts....')
+  },
+  afterSuccessHandleSaga: function* () {
+    console.log('Saga end....')
+  },
+})
 
-const store = {}
+const store = configureStore(userSlice, courseSlice)
 
 export default store
