@@ -158,11 +158,15 @@ const createReducer = (initialState, sliceName, formattedActions) => {
         const _reducer = get(formattedActions, path, null)
         if (_reducer) {
           // const newState = _reducer(state, action)
-          const newState = produce(state, (draft) => _reducer(draft, action))
-          if (typeof newState === 'undefined') {
-            return state
+          try {
+            const newState = produce(state, (draft) => _reducer(draft, action))
+            if (typeof newState === 'undefined') {
+              return state
+            }
+            return newState
+          } catch (error) {
+            console.warn(`Error in sliceName:${sliceName}`, path, error)
           }
-          return newState
         }
       }
     }
