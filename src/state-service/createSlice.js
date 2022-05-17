@@ -93,6 +93,8 @@ function commonSaga(saga, extraOptions) {
       }
     } catch (error) {
       console.log(error)
+      const [sliceName, actionName] = getPathFromActionType(action.type)
+      yield put({ type: getActionTypeFromPath([sliceName, actionName, 'failure']) })
       if (afterFailHandleSaga) {
         yield afterFailHandleSaga(action, extraOptions)
       }
