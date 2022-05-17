@@ -19,7 +19,14 @@ const isObjectReactSyntheticEvent = (obj) => {
   return get(obj, ['constructor', 'name']) === 'SyntheticBaseEvent'
 }
 
+const produceAction = (type, payload)=>{
+  return {
+    type,
+    payload : isObjectReactSyntheticEvent(payload)? null: payload
+  }
+}
+
 const isHandlerAPIRequest = (handler) => handler.__type === ASYNC_SERVICE_HANDLER_TYPE
 const isHandlerComplexAPIRequest = (handler) => Array.isArray(handler) && handler.length > 0 && isHandlerAPIRequest(handler[0])
 
-export { getActionTypeFromPath, getPathFromActionType, handlerHasSteps, isObjectReactSyntheticEvent, isHandlerAPIRequest, isHandlerComplexAPIRequest }
+export { getActionTypeFromPath, getPathFromActionType, handlerHasSteps, isObjectReactSyntheticEvent, isHandlerAPIRequest, isHandlerComplexAPIRequest, produceAction }
