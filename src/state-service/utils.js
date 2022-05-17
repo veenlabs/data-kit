@@ -8,7 +8,7 @@ const getPathFromActionType = (actionType = '') => {
   return actionType.split('::')
 }
 
-const handlerHasSteps = (handler) => {
+const handlerHasSteps = (handler = {}) => {
   if (Object.keys(handler).some((k) => ['request', 'failure', 'success'].indexOf(k) > -1)) {
     return true
   }

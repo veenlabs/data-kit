@@ -9,6 +9,13 @@ const handlerHasStepsByActionName = (actionName, slice) => {
 const proxyHandler = {
   get({ slice, dispatch }, actionName, receiver) {
     const handler = get(slice, ['actions', actionName])
+
+    if (!handler) {
+      return () => {
+        console.warn("Invalid Action: this action doesn't exist in slice", { slice: get(slice, 'name'), actionName })
+      }
+    }
+
     // steps now or in future
     const hasSteps = handlerHasStepsByActionName(actionName, slice) || isHandlerAPIRequest(handler) || isHandlerComplexAPIRequest(handler)
     const actionCreator = (data) => {
