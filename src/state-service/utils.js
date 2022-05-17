@@ -1,3 +1,4 @@
+import { ASYNC_SERVICE_HANDLER_TYPE } from '../helpers/const'
 import { get } from '../helpers/lodash'
 
 const getActionTypeFromPath = (path = []) => {
@@ -10,8 +11,6 @@ const getPathFromActionType = (actionType = '') => {
 const handlerHasSteps = (handler) => {
   if (Object.keys(handler).some((k) => ['request', 'failure', 'success'].indexOf(k) > -1)) {
     return true
-  } else if (handler.stepsInFuture) {
-    return true
   }
   return false
 }
@@ -20,4 +19,7 @@ const isObjectReactSyntheticEvent = (obj) => {
   return get(obj, ['constructor', 'name']) === 'SyntheticBaseEvent'
 }
 
-export { getActionTypeFromPath, getPathFromActionType, handlerHasSteps, isObjectReactSyntheticEvent }
+const isHandlerAPIRequest = (handler) => handler.__type === ASYNC_SERVICE_HANDLER_TYPE
+const isHandlerComplexAPIRequest = (handler) => Array.isArray(handler) && handler.length > 0 && isHandlerAPIRequest(handler[0])
+
+export { getActionTypeFromPath, getPathFromActionType, handlerHasSteps, isObjectReactSyntheticEvent, isHandlerAPIRequest, isHandlerComplexAPIRequest }

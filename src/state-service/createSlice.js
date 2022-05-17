@@ -1,15 +1,13 @@
 import produce from 'immer'
 import { call, put, takeLatest } from 'redux-saga/effects'
-import { ASYNC_SERVICE_HANDLER_TYPE, CACHE_NAMESPACES, STATE_SERVICE_RESET_ACTION_STATE } from '../helpers/const'
+import { CACHE_NAMESPACES, STATE_SERVICE_RESET_ACTION_STATE } from '../helpers/const'
 import { get } from '../helpers/lodash'
 import { setCache } from '../helpers/cache'
 import { getAllPreferences, getPreferences } from './setup'
 import actionsProxyHandler from './actionCreatorProxyHandler'
-import { getActionTypeFromPath, getPathFromActionType, handlerHasSteps } from './utils'
+import { getActionTypeFromPath, getPathFromActionType, handlerHasSteps, isHandlerAPIRequest, isHandlerComplexAPIRequest } from './utils'
 
 const isValueAHandler = (value) => Object.keys(value).some((k) => ['reducer', 'saga', 'extraOptions'].indexOf(k) > -1)
-const isHandlerAPIRequest = (handler) => handler.__type === ASYNC_SERVICE_HANDLER_TYPE
-const isHandlerComplexAPIRequest = (handler) => Array.isArray(handler) && handler.length > 0 && isHandlerAPIRequest(handler[0])
 
 function formatHandler(sliceName, actionName, handler) {
   // case 1
