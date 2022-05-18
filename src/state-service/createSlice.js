@@ -5,82 +5,24 @@ import { get } from '../helpers/lodash'
 import { setCache } from '../helpers/cache'
 import { getAllPreferences, getPreferences } from './setup'
 import actionsProxyHandler from './actionCreatorProxyHandler'
-import { getActionTypeFromPath, getPathFromActionType, handlerHasSteps, isHandlerAPIRequest, isHandlerComplexAPIRequest } from './utils'
+import {
+  getActionTypeFromPath,
+  getHandlerProps,
+  getPathFromActionType,
+  getStageNameFailure,
+  getStageNameRequest,
+  getStageNameSuccess,
+  handlerHasStages,
+  isHandlerAPIRequest,
+  isHandlerComplexAPIRequest,
+  produceAction,
+} from './utils'
 
-const isValueAHandler = (value) => Object.keys(value).some((k) => ['reducer', 'saga', 'extraOptions'].indexOf(k) > -1)
+const successStageName = getStageNameSuccess()
+const requestStageName = getStageNameRequest()
+const failureStageName = getStageNameFailure()
 
-function formatHandler(sliceName, actionName, handler) {
-  // case 1
-  // {
-  //     actions:{
-  //         getUser:{
-  //             reducer:()=>{},
-  //             saga:()=>{},
-  //             extraOptions:()=>{},
-  //         }
-  //     }
-  // }
-  if (isValueAHandler(handler)) {
-    return handler
-  }
-  // case 2
-  // {
-  //     actions:{
-  //         getUser:{
-  //             request:{
-  //                 reducer : ()=>{},
-  //                 saga: function*(){}
-  //             },
-  //             success:{
-  //                 reducer : ()=>{},
-  //             },
-  //         }
-  //     }
-  // }
-  else if (handlerHasSteps(handler)) {
-    // format each step
-    let keys = Object.keys(handler)
-    for (let key of keys) {
-      handler[key] = formatHandler(sliceName, actionName, handler[key])
-    }
-    return handler
-  }
-  // case 3
-  // {
-  //     actions:{
-  //         getUser: asyncService.getUser
-  //         getUser2: [asyncService.getUser, takeLatest]
-  //     }
-  // }
-  else if (isHandlerAPIRequest(handler) || isHandlerComplexAPIRequest(handler)) {
-    let action = handler
-    let sagaEffect = getPreferences('defaultSaga')
-    if (isHandlerComplexAPIRequest(handler)) {
-      action = handler[0]
-      sagaEffect = handler[1] || sagaEffect
-    }
-    return {
-      request: {
-        // this saga is auto generated
-        saga: function* ({ payload }) {
-          let path = [sliceName, actionName, 'success']
-          let result = yield call(action, payload)
-          yield put({
-            type: getActionTypeFromPath(path),
-            payload: result,
-          })
-        },
-        sagaEffect,
-      },
-      success: {
-        // this reducer is auto generated
-        reducer: (action, { payload }) => payload,
-      },
-    }
-  }
-}
-
-function commonSaga(saga, extraOptions) {
+function commonSaga(saga, extraOptions, handlerPath) {
   return function* (action) {
     const { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga } = getAllPreferences()
     if (beforeHandleSaga) {
@@ -93,8 +35,7 @@ function commonSaga(saga, extraOptions) {
       }
     } catch (error) {
       console.log(error)
-      const [sliceName, actionName] = getPathFromActionType(action.type)
-      yield put({ type: getActionTypeFromPath([sliceName, actionName, 'failure']) })
+      yield put({ type: getActionTypeFromPath([...handlerPath, failureStageName]) })
       if (afterFailHandleSaga) {
         yield afterFailHandleSaga(action, extraOptions)
       }
@@ -112,24 +53,17 @@ const getAllSagas = (sliceName, formattedActions) => {
     let path = [sliceName, actionName]
     if (handler.saga) {
       const actionType = getActionTypeFromPath(path)
-      const wrappedSaga = commonSaga(handler.saga, handler.extraOptions)
+      const wrappedSaga = commonSaga(handler.saga, handler.extraOptions, path)
       sagas = sagas.concat([[actionType, wrappedSaga, handler.sagaEffect]])
-    } else if (handlerHasSteps(handler)) {
-      let stepNames = Object.keys(handler)
-      for (let stepName of stepNames) {
-        const stepHandler = handler[stepName]
-        if (stepHandler.saga) {
-          const wrappedSaga = commonSaga(stepHandler.saga, stepHandler.extraOptions)
-
-          // extra saga for first step
-          if (stepName === 'request') {
-            const actionType = getActionTypeFromPath(path)
-            sagas = sagas.concat([[actionType, wrappedSaga, stepHandler.sagaEffect]])
-          }
-
-          path.push(stepName)
-          const actionType = getActionTypeFromPath(path)
-          sagas = sagas.concat([[actionType, wrappedSaga, stepHandler.sagaEffect]])
+    } else if (handlerHasStages(handler)) {
+      let stageNames = Object.keys(handler)
+      for (let stageName of stageNames) {
+        const stageHandler = handler[stageName]
+        if (stageHandler.saga) {
+          const stagePath = [...path, stageName]
+          const wrappedSaga = commonSaga(stageHandler.saga, stageHandler.extraOptions, path)
+          const actionType = getActionTypeFromPath(stagePath)
+          sagas = sagas.concat([[actionType, wrappedSaga, stageHandler.sagaEffect]])
         }
       }
     }
@@ -138,17 +72,105 @@ const getAllSagas = (sliceName, formattedActions) => {
   return sagas
 }
 
+const isValueAHandler = (value) => Object.keys(value).some((k) => getHandlerProps().indexOf(k) > -1)
+
+function formatHandler(sliceName, actionName, handler) {
+  /**
+   * This method will eventually format all handler into below tree structure
+   * {
+   * * handler:{reducer,saga},
+   * * handler: {
+   *      request:{reducer,saga},
+   *      success:{reducer,saga},
+   *      failure:{reducer,saga},
+   * * }
+   * }
+   */
+  if (isValueAHandler(handler)) {
+    // case 1
+    // {
+    //     actions:{
+    //         getUser:{
+    //             reducer:()=>{},
+    //             saga:()=>{},
+    //             extraOptions:()=>{},
+    //         }
+    //     }
+    // }
+    return handler
+  } else if (isHandlerAPIRequest(handler) || isHandlerComplexAPIRequest(handler)) {
+    // case 2
+    // {
+    //     actions:{
+    //         getUser: asyncService.getUser
+    //         getUser2: [asyncService.getUser, takeLatest]
+    //     }
+    // }
+    let action = handler
+    let sagaEffect = getPreferences('defaultSaga')
+    if (isHandlerComplexAPIRequest(handler)) {
+      action = handler[0]
+      sagaEffect = handler[1] || sagaEffect
+    }
+    return {
+      request: {
+        // this saga is auto generated
+        saga: function* ({ payload }) {
+          let result = yield call(action, payload)
+          let path = [sliceName, actionName, successStageName]
+          yield put(produceAction(getActionTypeFromPath(path), result))
+        },
+        sagaEffect,
+      },
+      success: {
+        // this reducer is auto generated
+        reducer: (action, { payload }) => payload,
+      },
+      failure: {
+        saga: function* () {
+          console.log('@Todo: Remove this saga---->AUTO FAIL')
+        },
+      },
+    }
+  } else if (handlerHasStages(handler)) {
+    // case 3
+    // {
+    //     actions:{
+    //         getUser:{
+    //             request: AsyncService.GetSome,
+    //             success:{
+    //                 reducer : ()=>{},
+    //             },
+    //         }
+    //     }
+    // }
+
+    // in this case we are we check whether request stage is AsyncService or not.
+    // If yes then using recurrsion we get {request, success, failure}
+    // We replace request, but if user has defined any of {success, failure} we use it
+    const requestHandler = get(handler, [requestStageName])
+    if (isHandlerAPIRequest(requestHandler) || isHandlerComplexAPIRequest(requestHandler)) {
+      const { request, success, failure } = formatHandler(sliceName, actionName, requestHandler)
+      handler.request = request
+      handler.success = handler.success || success
+      handler.failure = handler.failure || failure
+    }
+    return handler
+  }
+  return handler
+}
+
 const formatActions = (sliceName, actions) => {
-  const formattedActions = Object.keys(actions).reduce((acc, actionName) => {
-    acc[actionName] = formatHandler(sliceName, actionName, actions[actionName])
-    return acc
-  }, {})
+  let formattedActions = {}
+  for (let actionName in actions) {
+    formattedActions[actionName] = formatHandler(sliceName, actionName, actions[actionName])
+  }
   return formattedActions
 }
 
 const createReducer = (initialState, sliceName, formattedActions) => {
   const reducer = (state = initialState, action) => {
-    // payload should be either empty or it should be same as sliceName
+    // payload should be either state_reset or it should be same as sliceName
     if (action.type === STATE_SERVICE_RESET_ACTION_STATE && (action.payload === STATE_SERVICE_RESET_ACTION_STATE || action.payload === sliceName)) {
       return initialState
     } else {

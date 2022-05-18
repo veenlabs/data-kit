@@ -1,9 +1,9 @@
-import { getActionTypeFromPath, handlerHasSteps, isObjectReactSyntheticEvent, isHandlerAPIRequest, isHandlerComplexAPIRequest } from './utils'
+import { getActionTypeFromPath, handlerHasStages, isObjectReactSyntheticEvent, isHandlerAPIRequest, isHandlerComplexAPIRequest } from './utils'
 import { get } from '../helpers/lodash'
 
-const handlerHasStepsByActionName = (actionName, slice) => {
+const handlerHasStagesByActionName = (actionName, slice) => {
   const handler = slice['actions'][actionName]
-  return handlerHasSteps(handler)
+  return handlerHasStages(handler)
 }
 
 const proxyHandler = {
@@ -17,7 +17,7 @@ const proxyHandler = {
     }
 
     // steps now or in future
-    const hasSteps = handlerHasStepsByActionName(actionName, slice) || isHandlerAPIRequest(handler) || isHandlerComplexAPIRequest(handler)
+    const hasSteps = handlerHasStagesByActionName(actionName, slice) || isHandlerAPIRequest(handler) || isHandlerComplexAPIRequest(handler)
     const actionCreator = (data) => {
       let path = [slice.name, actionName]
       // ignore  react events

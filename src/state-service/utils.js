@@ -8,8 +8,8 @@ const getPathFromActionType = (actionType = '') => {
   return actionType.split('::')
 }
 
-const handlerHasSteps = (handler = {}) => {
-  if (Object.keys(handler).some((k) => ['request', 'failure', 'success'].indexOf(k) > -1)) {
+const handlerHasStages = (handler = {}) => {
+  if (Object.keys(handler).some((k) => getHandlerStages().indexOf(k) > -1)) {
     return true
   }
   return false
@@ -19,14 +19,32 @@ const isObjectReactSyntheticEvent = (obj) => {
   return get(obj, ['constructor', 'name']) === 'SyntheticBaseEvent'
 }
 
-const produceAction = (type, payload)=>{
+const produceAction = (type, payload) => {
   return {
     type,
-    payload : isObjectReactSyntheticEvent(payload)? null: payload
+    payload: isObjectReactSyntheticEvent(payload) ? null : payload,
   }
 }
 
 const isHandlerAPIRequest = (handler) => handler.__type === ASYNC_SERVICE_HANDLER_TYPE
 const isHandlerComplexAPIRequest = (handler) => Array.isArray(handler) && handler.length > 0 && isHandlerAPIRequest(handler[0])
+const getHandlerStages = () => ['request', 'success', 'failure']
+const getHandlerProps = () => ['reducer', 'saga', 'extraOptions']
+const getStageNameSuccess = () => getHandlerStages()[1]
+const getStageNameRequest = () => getHandlerStages()[0]
+const getStageNameFailure = () => getHandlerStages()[2]
 
-export { getActionTypeFromPath, getPathFromActionType, handlerHasSteps, isObjectReactSyntheticEvent, isHandlerAPIRequest, isHandlerComplexAPIRequest, produceAction }
+export {
+  getActionTypeFromPath,
+  getPathFromActionType,
+  handlerHasStages,
+  isObjectReactSyntheticEvent,
+  isHandlerAPIRequest,
+  isHandlerComplexAPIRequest,
+  produceAction,
+  getHandlerStages,
+  getHandlerProps,
+  getStageNameSuccess,
+  getStageNameRequest,
+  getStageNameFailure,
+}
