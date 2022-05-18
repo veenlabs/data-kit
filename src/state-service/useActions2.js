@@ -53,7 +53,7 @@ function _getActions(params, dispatch) {
     },
     {
       get({ sliceName }, prop) {
-        return getActions(`${sliceName}:${prop}`)
+        return _getActions(`${sliceName}:${prop}`, dispatch)
       },
     },
   )
