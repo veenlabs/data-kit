@@ -60,47 +60,7 @@ function _getActions(params, dispatch) {
 }
 
 function getActions(params) {
-  const stringPattern = typeof params === 'string' ? params : params.name
-  const [sliceName, actionName, stageName] = stringPattern.split(':')
-
-  // if stage is defined it is assumed that sliceName and actionNames are also defined
-  if (stageName) {
-    return (data) => {
-      const path = [sliceName, actionName, stageName]
-      const actionType = getActionTypeFromPath(path)
-      return produceAction(actionType, data)
-    }
-  } else if (actionName) {
-    const path = [sliceName, actionName]
-    const formattedSliceActions = getCache(CACHE_NAMESPACES.STATE_SERVICE_FORMATTED_ACTIONS, sliceName)
-    const hasStages = handlerHasStages(get(formattedSliceActions, [actionName]))
-    const actionCreator = (data) => {
-      const actionType = hasStages ? getActionTypeFromPath([...path, requestStageName]) : getActionTypeFromPath(path)
-      return produceAction(actionType, data)
-    }
-    if (hasStages) {
-      const stageActions = new Proxy(stagesObjects, {
-        get(target, stageProp) {
-          return (data) => {
-            const actionType = getActionTypeFromPath([...path, stageProp])
-            return produceAction(actionType, data)
-          }
-        },
-      })
-      Object.assign(actionCreator, stageActions)
-    }
-    return actionCreator
-  }
-  return new Proxy(
-    {
-      sliceName,
-    },
-    {
-      get({ sliceName }, prop) {
-        return getActions(`${sliceName}:${prop}`)
-      },
-    },
-  )
+  return _getActions(params, null)
 }
 
 function useActions(params) {

@@ -17,6 +17,7 @@ import {
   isHandlerComplexAPIRequest,
   produceAction,
 } from './utils'
+import { getActions } from './useActions2'
 
 const successStageName = getStageNameSuccess()
 const requestStageName = getStageNameRequest()
@@ -198,6 +199,7 @@ const createReducer = (initialState, sliceName, formattedActions) => {
 }
 
 function createSlice(slice = {}) {
+  // @todo: This has to be removed
   setCache(CACHE_NAMESPACES.STATE_SERVICE_RAW_SLICES, slice.name, slice)
   const { name = null, initialState = null, selectors = {}, actions = {} } = slice
 
@@ -205,12 +207,14 @@ function createSlice(slice = {}) {
   const sagas = getAllSagas(name, formattedActions)
   const reducer = createReducer(initialState, name, formattedActions)
 
+  setCache(CACHE_NAMESPACES.STATE_SERVICE_FORMATTED_ACTIONS, slice.name, formattedActions)
+
   return Object.freeze({
     name,
     sagas: sagas,
     selectors: selectors,
     reducer: reducer,
-    actions: new Proxy({ slice }, actionsProxyHandler),
+    actions: getActions(name),
   })
 }
 

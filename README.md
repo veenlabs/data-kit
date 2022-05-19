@@ -10,7 +10,9 @@
 - [x] Saga events (beforeSaga, afterSaga)
 - [X] Get rid errors when wrong name is provided
 - [ ] More ways to get actions (direct access to actions and selectors from Component and Sagas)
+- [ ] Async services, remove commonHeaders from formatter for API operation.
 - [ ] Simplify actions
+- [ ] Merge useSliceSelector2 and useSliceSelector 
 
 <br />
 
