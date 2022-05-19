@@ -18,6 +18,7 @@ import {
   produceAction,
 } from './utils'
 import { getActions } from './useActions2'
+import { getActions3 } from './getActions'
 
 const successStageName = getStageNameSuccess()
 const requestStageName = getStageNameRequest()
@@ -214,7 +215,7 @@ function createSlice(slice = {}) {
     sagas: sagas,
     selectors: selectors,
     reducer: reducer,
-    actions: getActions(name),
+    actions: getActions3(name),
   })
 }
 
