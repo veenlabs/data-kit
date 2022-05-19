@@ -3,7 +3,7 @@ import { getCache } from '../helpers/cache'
 import { CACHE_NAMESPACES } from '../helpers/const'
 import { get, identity } from '../helpers/lodash'
 
-function renSelector(sliceName, selectorName, state) {
+function runSelector(sliceName, selectorName, state) {
   const slice = getCache(CACHE_NAMESPACES.STATE_SERVICE_RAW_SLICES, sliceName)
   const path = ['selectors', selectorName]
   const currentSelector = get(slice, path, null)
@@ -27,7 +27,7 @@ function useSliceSelector(sliceRef) {
       {},
       {
         get(target, selectorName) {
-          return renSelector(sliceRef.name, selectorName, s)
+          return runSelector(sliceRef.name, selectorName, s)
         },
       },
     )
@@ -39,7 +39,7 @@ function useSliceSelector(sliceRef) {
 function useSliceSelector2(selectorPath = '') {
   // selectorPath = sliceName:selector -> user:getFullName
   const [sliceName, selectorName] = selectorPath.split(':')
-  const selector = (s) => renSelector(sliceName, selectorName, s)
+  const selector = (s) => runSelector(sliceName, selectorName, s)
   const result = useSelector(selector)
   return result
 }

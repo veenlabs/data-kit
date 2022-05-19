@@ -4,7 +4,6 @@ import { CACHE_NAMESPACES, STATE_SERVICE_RESET_ACTION_STATE } from '../helpers/c
 import { get } from '../helpers/lodash'
 import { setCache } from '../helpers/cache'
 import { getAllPreferences, getPreferences } from './setup'
-import actionsProxyHandler from './actionCreatorProxyHandler'
 import {
   getActionTypeFromPath,
   getHandlerProps,
@@ -17,8 +16,7 @@ import {
   isHandlerComplexAPIRequest,
   produceAction,
 } from './utils'
-import { getActions } from './useActions2'
-import { getActions3 } from './getActions'
+import getActions from './getActions'
 
 const successStageName = getStageNameSuccess()
 const requestStageName = getStageNameRequest()
@@ -215,7 +213,7 @@ function createSlice(slice = {}) {
     sagas: sagas,
     selectors: selectors,
     reducer: reducer,
-    actions: getActions3(name),
+    actions: getActions(name),
   })
 }
 

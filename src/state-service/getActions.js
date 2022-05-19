@@ -1,4 +1,3 @@
-import { useDispatch } from 'react-redux'
 import { getCache } from '../helpers/cache'
 import { CACHE_NAMESPACES } from '../helpers/const'
 import { get } from '../helpers/lodash'
@@ -14,7 +13,7 @@ const level1Handler = {
   },
 }
 
-// Level2 : sliceName: ActionName
+// Level2 : sliceName:ActionName
 const level2Handler = ({ sliceName, actionName, dispatch }) => {
   const path = [sliceName, actionName]
   const formattedSliceActions = getCache(CACHE_NAMESPACES.STATE_SERVICE_FORMATTED_ACTIONS, sliceName)
@@ -47,10 +46,9 @@ const level2Handler = ({ sliceName, actionName, dispatch }) => {
       }
     },
   })
-
 }
 
-// Level3 : sliceName: ActionName: Stagename
+// Level3 : sliceName:ActionName:Stagename
 const level3Handler = ({ sliceName, actionName, stageName, dispatch }) => {
   return (data) => {
     const path = [sliceName, actionName, stageName]
@@ -65,19 +63,22 @@ const level3Handler = ({ sliceName, actionName, stageName, dispatch }) => {
 const _getActions = (params, dispatch) => {
   const stringPattern = typeof params === 'string' ? params : params.name
   const [sliceName, actionName, stageName] = stringPattern.split(':')
+
+  // if stage is defined it is assumed that sliceName and actionNames are also defined
   if (stageName) return level3Handler({ sliceName, actionName, stageName, dispatch })
+
   if (actionName) return level2Handler({ sliceName, actionName, dispatch })
+
   return new Proxy({ sliceName, dispatch }, level1Handler)
 }
 
-const useActions3 = (params) => {
-  const dispatch = useDispatch()
-  return _getActions(params, dispatch)
-}
+const getActions = (params) => {
+  // Params can be slice or a pattern
+  // params => slice
+  // params => pathString => user:authentication, products:get:request
 
-const getActions3 = (params) => {
   return _getActions(params)
 }
 
-export { getActions3 }
-export default useActions3
+export { _getActions }
+export default getActions
