@@ -207,6 +207,7 @@ function createSlice(slice = {}) {
   const reducer = createReducer(initialState, name, formattedActions)
 
   setCache(CACHE_NAMESPACES.STATE_SERVICE_FORMATTED_ACTIONS, slice.name, formattedActions)
+  setCache(CACHE_NAMESPACES.STATE_SERVICE_SLICE_SELECTORS, slice.name, selectors)
 
   return Object.freeze({
     name,
