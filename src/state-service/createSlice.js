@@ -198,8 +198,6 @@ const createReducer = (initialState, sliceName, formattedActions) => {
 }
 
 function createSlice(slice = {}) {
-  // @todo: This has to be removed
-  setCache(CACHE_NAMESPACES.STATE_SERVICE_RAW_SLICES, slice.name, slice)
   const { name = null, initialState = null, selectors = {}, actions = {} } = slice
 
   const formattedActions = formatActions(name, actions)
