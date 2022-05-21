@@ -81,7 +81,7 @@ addConfiguration({
 })
 
 
-// Add apis. You can configure each operation more than just shown in below examples. Check documents for more details
+// Add apis. You can configure each operation more than just shown in the below examples. Check documents for more details
 addOperations({
   createProduct: ['/api/v1/products', 'POST'],
   listProducts: '/api/v1/products',
@@ -95,19 +95,24 @@ addOperations({
 ### createSlice()
 
 ```js
-// ## Write import stuff
+import { AsyncService, StateService } from '@veen2/data-kit'
+
+const { asyncService } = AsyncService
+const { createSlice } = StateService
+
 const userSlice = createSlice({
   name: 'products',
   initialState: null,
   selectors: {
     getProducts: (s) => s.products || [],
-    topProduct: (s)=> (s.products || []).sort((a,b)=>a-b) // some logic
+    topProduct: (s) => (s.products || []).sort((a, b) => a - b), // some logic
   },
   actions: {
     // Just api service is mentioned as action. Data will fetched and stored in state
     listProducts: asyncService.listProducts,
 
-    // This action has three stages. (request, success, failure)
+    // This is a little complex action, it has three stages. (request, success, failure)
+    // All stages are optional
     createProduct: {
       // In request stage we just mentioned the api service
       request: asyncService.createProduct,
@@ -120,13 +125,15 @@ const userSlice = createSlice({
         },
       },
 
-      // This is failure stage
+      // Optional failure stage
       failure: {
         // Do something
       },
     },
   },
 })
+
+export default userSlice
 
 ```
 
@@ -191,10 +198,10 @@ export default App
 
 ```js
 import React from 'react'
-import { AsyncService, Da } from '@veen2/data-kit'
+import { AsyncService, StateService } from '@veen2/data-kit'
 
-const { asyncService, useAsyncServiceStatus } = AsyncService
-const status = useAsyncServiceStatus(actionName)
+const { useAsyncServiceStatus } = AsyncService
+const { useActions, useSliceSelector } = StateService
 
 function Products() {
   const createProductApiStatus = useAsyncServiceStatus('createProduct')
@@ -208,7 +215,7 @@ function Products() {
   const topProduct = useSliceSelector('products:topProduct')
 
   React.useEffect(() => {
-    // Fetch products when component mounts
+    // Fetch items when component mounts
     listProducts()
   }, [])
 
@@ -233,6 +240,7 @@ function Products() {
 }
 
 export default Products
+
 ```
 
 
