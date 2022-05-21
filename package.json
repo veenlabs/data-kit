@@ -1,6 +1,6 @@
 {
   "name": "@veen2/data-kit",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Highly opinionated utilties for redux/react and async services",
   "author": "Veen Labs <veenlabs@gmail.com>",
   "license": "MIT",
@@ -29,7 +29,7 @@
     "test": "mocha --require @babel/register  tests/*.test.js",
     "build": "cross-env NODE_ENV=production rollup -c",
     "start": "cross-env rollup -c -w",
-    "release":"npm publish --access=public"
+    "release": "npm publish --access=public"
   },
   "files": [
     "dist/*.js",
