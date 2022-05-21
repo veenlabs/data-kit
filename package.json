@@ -1,15 +1,41 @@
 {
-  "name": "@veen/data-kit",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@veen2/data-kit",
+  "version": "0.2.0",
+  "description": "Highly opinionated utilties for redux/react and async services",
+  "author": "Veen Labs <veenlabs@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/veenlabs/data-kit.git"
+  },
+  "keywords": [
+    "redux",
+    "react",
+    "toolkit",
+    "reducer",
+    "slice",
+    "immer",
+    "immutable",
+    "data-kit",
+    "async services"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "scripts": {
     "lint:fix": "prettier --write src/*.js src/**/*.js src/**/**/*.js src/**/**/**/*.js tests/*.test.js",
     "test": "mocha --require @babel/register  tests/*.test.js",
-    "build": "rollup -c",
-    "start": "rollup -c -w"
+    "build": "cross-env NODE_ENV=production rollup -c",
+    "start": "cross-env rollup -c -w",
+    "release":"npm publish --access=public"
   },
+  "files": [
+    "dist/*.js",
+    "dist/*.js.map",
+    "src/"
+  ],
   "peerDependencies": {
     "axios": "^0.27.2",
     "immer": "^9.0.12",
@@ -32,14 +58,22 @@
     "@rollup/plugin-node-resolve": "^13.3.0",
     "axios": "^0.27.2",
     "babel-loader": "^8.2.5",
+    "cross-env": "^7.0.3",
     "esm": "^3.2.25",
     "immer": "^9.0.14",
     "lodash": "^4.17.21",
     "mocha": "^10.0.0",
     "prettier": "^2.6.2",
+    "redux-logger": "^3.0.6",
     "rollup": "^2.73.0",
     "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-filesize": "^9.1.2",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-terser": "^7.0.2"
-  }
+  },
+  "sideEffects": false,
+  "bugs": {
+    "url": "https://github.com/veenlabs/data-kit/issues"
+  },
+  "homepage": "https://github.com/veenlabs/data-kit"
 }
