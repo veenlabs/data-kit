@@ -1,4 +1,4 @@
-import { StateService, AsyncService } from '@veen/data-kit'
+import { StateService, AsyncService } from '@veen2/data-kit'
 const { asyncService } = AsyncService
 const { createSlice } = StateService
 

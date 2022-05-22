@@ -1,6 +1,6 @@
 import React from 'react'
 import userSlice from '../data/slices/user'
-import { StateService } from '@veen/data-kit'
+import { StateService } from '@veen2/data-kit'
 
 const { useActions, useSliceSelector, useReset } = StateService
 

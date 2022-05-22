@@ -1,4 +1,4 @@
-import { StateService, AsyncService } from '@veen/data-kit'
+import { StateService, AsyncService } from '@veen2/data-kit'
 import { get } from 'lodash'
 import { call, put } from 'redux-saga/effects'
 const { asyncService } = AsyncService

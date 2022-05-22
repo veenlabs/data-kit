@@ -1,6 +1,6 @@
 import React from 'react'
 import coursesSlice from '../data/slices/courses'
-import { StateService } from '@veen/data-kit'
+import { StateService } from '@veen2/data-kit'
 
 const { useActions, useStateSelector } = StateService
 function Courses() {

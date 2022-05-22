@@ -1,4 +1,4 @@
-import { StateService, AsyncService } from '@veen/data-kit'
+import { StateService, AsyncService } from '@veen2/data-kit'
 import { select } from 'redux-saga/effects'
 const { faker } = require('@faker-js/faker')
 

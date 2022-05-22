@@ -1,4 +1,4 @@
-import { AsyncService } from '@veen/data-kit'
+import { AsyncService } from '@veen2/data-kit'
 
 const { addConfiguration, addOperations, types, useAsyncServiceStatus } = AsyncService
 

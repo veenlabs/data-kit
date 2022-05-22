@@ -1,4 +1,4 @@
-import { StateService } from '@veen/data-kit'
+import { StateService } from '@veen2/data-kit'
 import userSlice from './slices/user'
 import courseSlice from './slices/courses'
 import productsSlice from './slices/products'

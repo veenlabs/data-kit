@@ -1,5 +1,5 @@
 import React from 'react'
-import { AsyncService } from '@veen/data-kit'
+import { AsyncService } from '@veen2/data-kit'
 
 const { asyncService, useAsyncServiceStatus } = AsyncService
 

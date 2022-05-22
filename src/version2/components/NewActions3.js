@@ -1,5 +1,5 @@
 import React from 'react'
-import { StateService } from '@veen/data-kit'
+import { StateService } from '@veen2/data-kit'
 import courseSlice from '../data/slices/courses'
 
 const { useActions, getActions } = StateService
