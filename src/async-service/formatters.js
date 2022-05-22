@@ -25,7 +25,6 @@ function formatApiOperation(options, provider, data) {
 
   let finalOptions = {
     url: provider.baseUrl + url,
-    headers: provider.commonHeaders,
     method,
     data: data,
   }
