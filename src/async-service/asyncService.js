@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getCacheWithProduceFn, logCache } from '../helpers/cache'
+import { getCacheWithProduceFn } from '../helpers/cache'
 import {
   ASYNC_SERVICE_DEFAULT_MODULE_NAME,
   ASYNC_SERVICE_DEFAULT_PROVIDER_NAME,
@@ -40,7 +40,6 @@ async function makeRequest({ providerName, moduleName, operationName, data }) {
   const providerType = get(provider, ['type'])
   const options = getOperationOptions(providerName, moduleName, operationName)
   console.log({ providerName, moduleName, operationName, options })
-  logCache()
   let formatOperation = get(provider, ['formatOperation'])
   let runAsyncOperation = get(provider, ['runAsyncOperation'])
   const { beforeRequest, beforeSuccess } = getBeforeRequestBeforeSuccess(options, moduleName, provider)

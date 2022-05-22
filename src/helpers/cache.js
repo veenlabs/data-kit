@@ -33,7 +33,7 @@ function resetCache() {
   cache = {}
 }
 function _logCache() {
-  console.log({cache})
+  console.log({ cache })
 }
 
 export { setCache, getCache, resetCache, getCacheWithProduceFn, _logCache }
