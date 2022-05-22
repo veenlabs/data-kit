@@ -1,5 +1,5 @@
 import { ASYNC_SERVICE_HANDLER_TYPE } from '../helpers/const'
-import { get, identity } from '../helpers/lodash'
+import { get } from '../helpers/lodash'
 
 const getActionTypeFromPath = (path = []) => {
   return path.join('::')
@@ -34,13 +34,6 @@ const getStageNameSuccess = () => getHandlerStages()[1]
 const getStageNameRequest = () => getHandlerStages()[0]
 const getStageNameFailure = () => getHandlerStages()[2]
 
-const arrayToObject = (arr = [], producerFn = identity) => {
-  return arr.reduce((a, c) => {
-    a[c] = producerFn(c)
-    return a
-  }, {})
-}
-
 export {
   getActionTypeFromPath,
   getPathFromActionType,
@@ -54,5 +47,4 @@ export {
   getStageNameSuccess,
   getStageNameRequest,
   getStageNameFailure,
-  arrayToObject,
 }

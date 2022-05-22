@@ -6,13 +6,8 @@ function getProviderConfig(name) {
   return getCache(CACHE_NAMESPACES.ASYNC_SERVICE_CONFIG, name, null)
 }
 
-function getOperations(providerName) {
-  return getCache(CACHE_NAMESPACES.ASYNC_SERVICE_OPERATIONS_OPTIONS, providerName, null)
+function getOperationOptions(providerName, moduleName, operationName) {
+  return getCache(CACHE_NAMESPACES.ASYNC_SERVICE_OPERATIONS_OPTIONS, [providerName, moduleName, operationName], null)
 }
 
-function getOperationOptions(providerName, operationName) {
-  const operations = getOperations(providerName)
-  return get(operations, [operationName], null)
-}
-
-export { getProviderConfig, getOperationOptions, getOperations }
+export { getProviderConfig, getOperationOptions }

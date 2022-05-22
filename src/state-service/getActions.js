@@ -1,7 +1,8 @@
 import { getCache } from '../helpers/cache'
 import { CACHE_NAMESPACES } from '../helpers/const'
 import { get } from '../helpers/lodash'
-import { arrayToObject, getActionTypeFromPath, getHandlerStages, getStageNameRequest, handlerHasStages, produceAction } from './utils'
+import { arrayToObject } from '../helpers/utils'
+import { getActionTypeFromPath, getHandlerStages, getStageNameRequest, handlerHasStages, produceAction } from './utils'
 
 const requestStageName = getStageNameRequest()
 const stagesObjects = arrayToObject(getHandlerStages())

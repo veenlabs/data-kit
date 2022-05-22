@@ -74,6 +74,10 @@ const getAllSagas = (sliceName, formattedActions) => {
 
 const isValueAHandler = (value) => Object.keys(value).some((k) => getHandlerProps().indexOf(k) > -1)
 
+const caller2 = async (fn2, data) => {
+  return await fn2(data)
+}
+
 function formatHandler(sliceName, actionName, handler) {
   /**
    * This method will eventually format all handler into below tree structure
@@ -116,7 +120,8 @@ function formatHandler(sliceName, actionName, handler) {
       request: {
         // this saga is auto generated
         saga: function* ({ payload }) {
-          let result = yield call(action, payload)
+          let result = yield call(caller2, action, payload)
+          // let result = yield call(action, payload)
           let path = [sliceName, actionName, successStageName]
           yield put(produceAction(getActionTypeFromPath(path), result))
         },
