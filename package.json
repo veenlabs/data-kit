@@ -23,7 +23,7 @@
     "access": "public"
   },
   "main": "dist/index.js",
-  "module": "dist/index.es.js",
+  "module": "dist/veen-data-kit.es.js",
   "scripts": {
     "lint:fix": "prettier --write src/*.js src/**/*.js src/**/**/*.js src/**/**/**/*.js tests/*.test.js",
     "test": "mocha --require @babel/register  tests/*.test.js",
@@ -75,5 +75,6 @@
   "bugs": {
     "url": "https://github.com/veenlabs/data-kit/issues"
   },
-  "homepage": "https://github.com/veenlabs/data-kit"
+  "homepage": "https://github.com/veenlabs/data-kit",
+  "dependencies": {}
 }
