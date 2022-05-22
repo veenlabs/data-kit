@@ -11,6 +11,10 @@ function useSliceSelector(params) {
   } else {
     return new Proxy(selectors, {
       get(selectorsInner, prop) {
+        if (!selectorsInner[prop]) {
+          console.warn("Invalid selector: this selector doesn't exist in slice", { slice: sliceName, prop })
+          return `Invalid selector ${sliceName}.${prop}`
+        }
         const result = useSelector(selectorsInner[prop])
         return result
       },
