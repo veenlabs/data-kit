@@ -1,6 +1,6 @@
 {
   "name": "@veen2/data-kit",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Highly opinionated utilties for redux/react and async services",
   "author": "Veen Labs <veenlabs@gmail.com>",
   "license": "MIT",
