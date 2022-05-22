@@ -2,12 +2,12 @@ import React from 'react'
 import userSlice from '../data/slices/user'
 import { StateService } from '@veen/data-kit'
 
-const { useActions, useSliceSelector, useSliceSelector2, useReset } = StateService
+const { useActions, useSliceSelector, useReset } = StateService
 
 function AuthDemo() {
   const { authenticate1, authenticate2, authenticate3, logout, modifyName } = useActions(userSlice)
   const { getUserName: userName } = useSliceSelector(userSlice)
-  const email = useSliceSelector2('user:getEmail')
+  const email = useSliceSelector('user:getEmail')
   const { reset } = useReset()
   return (
     <div>

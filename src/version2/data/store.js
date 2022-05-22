@@ -1,6 +1,7 @@
 import { StateService } from '@veen/data-kit'
 import userSlice from './slices/user'
 import courseSlice from './slices/courses'
+import productsSlice from './slices/products'
 
 const { configureStore, setup } = StateService
 
@@ -15,6 +16,6 @@ setup({
   },
 })
 
-const store = configureStore(userSlice, courseSlice)
+const store = configureStore(userSlice, courseSlice, productsSlice)
 
 export default store

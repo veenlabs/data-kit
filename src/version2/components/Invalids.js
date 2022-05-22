@@ -2,12 +2,12 @@ import React from 'react'
 import userSlice from '../data/slices/user'
 import { StateService } from '@veen/data-kit'
 
-const { useActions, useSliceSelector, useSliceSelector2, useReset } = StateService
+const { useActions, useSliceSelector, useReset } = StateService
 
 function Invalids() {
   const { inValidAction } = useActions(userSlice)
   const { getInvalidData } = useSliceSelector(userSlice)
-  const invoice = useSliceSelector2('user:invoices')
+  const invoice = useSliceSelector('user:invoices')
 
   return (
     <div>

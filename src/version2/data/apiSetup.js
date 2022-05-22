@@ -26,4 +26,5 @@ addOperations({
   },
   authenticate1: '/api/v1/users/authenticate',
   authenticate2: ['/api/v1/users/authenticate', 'post'],
+  getUser: '/api/v1/users/me',
 })

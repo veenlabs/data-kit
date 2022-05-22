@@ -40,6 +40,7 @@ const slice = createSlice({
         state.data.user.email = 'Helloooooooooo'
       },
     },
+    getUser: asyncService.getUser,
   },
 })
 
