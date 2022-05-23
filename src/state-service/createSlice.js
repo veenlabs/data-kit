@@ -154,7 +154,7 @@ function formatHandler(sliceName, actionName, handler) {
     // If yes then using recurrsion we get {request, success, failure}
     // We replace request, but if user has defined any of {success, failure} we use it
     const requestHandler = get(handler, [requestStageName])
-    if (isHandlerAnAsyncOperation(requestHandler) || isHandlerAnComplexAsyncOperation(requestHandler)) {
+    if ((requestHandler && isHandlerAnAsyncOperation(requestHandler)) || isHandlerAnComplexAsyncOperation(requestHandler)) {
       const { request, success, failure } = formatHandler(sliceName, actionName, requestHandler)
       handler.request = request
       handler.success = handler.success || success
