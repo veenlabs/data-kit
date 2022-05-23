@@ -2,6 +2,13 @@ import { useDispatch } from 'react-redux'
 import { STATE_SERVICE_RESET_ACTION_STATE } from '../helpers/const'
 import { isObjectReactSyntheticEvent } from './utils'
 
+const createResetAction = (sliceName) => {
+  return {
+    type: STATE_SERVICE_RESET_ACTION_STATE,
+    payload: isObjectReactSyntheticEvent(sliceName) ? STATE_SERVICE_RESET_ACTION_STATE : sliceName,
+  }
+}
+
 const useReset = () => {
   /**
    * // This will reset whole redux
@@ -13,12 +20,11 @@ const useReset = () => {
   const dispatch = useDispatch()
   return {
     reset: (sliceName) => {
-      dispatch({
-        type: STATE_SERVICE_RESET_ACTION_STATE,
-        payload: isObjectReactSyntheticEvent(sliceName) ? STATE_SERVICE_RESET_ACTION_STATE : sliceName,
-      })
+      dispatch(createResetAction(sliceName))
     },
   }
 }
+
+export { createResetAction }
 
 export default useReset
