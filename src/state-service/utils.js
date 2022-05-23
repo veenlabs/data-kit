@@ -26,8 +26,9 @@ const produceAction = (type, payload) => {
   }
 }
 
-const isHandlerAPIRequest = (handler) => handler.__type === ASYNC_SERVICE_HANDLER_TYPE
-const isHandlerComplexAPIRequest = (handler) => Array.isArray(handler) && handler.length > 0 && isHandlerAPIRequest(handler[0])
+const isHandlerAnAsyncOperation = (handler) => handler.__type === ASYNC_SERVICE_HANDLER_TYPE || get(handler, ['constructor', 'name']) === 'AsyncFunction'
+const isHandlerAnComplexAsyncOperation = (handler) => Array.isArray(handler) && handler.length > 0 && isHandlerAnAsyncOperation(handler[0])
+
 const getHandlerStages = () => ['request', 'success', 'failure']
 const getHandlerProps = () => ['reducer', 'saga', 'extraOptions']
 const getStageNameSuccess = () => getHandlerStages()[1]
@@ -39,12 +40,12 @@ export {
   getPathFromActionType,
   handlerHasStages,
   isObjectReactSyntheticEvent,
-  isHandlerAPIRequest,
-  isHandlerComplexAPIRequest,
   produceAction,
   getHandlerStages,
   getHandlerProps,
   getStageNameSuccess,
   getStageNameRequest,
   getStageNameFailure,
+  isHandlerAnAsyncOperation,
+  isHandlerAnComplexAsyncOperation,
 }

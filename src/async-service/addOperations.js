@@ -10,8 +10,6 @@ function addOperations(options) {
   const existingOperations = getCache(CACHE_NAMESPACES.ASYNC_SERVICE_OPERATIONS_OPTIONS, [providerName, moduleName], {})
   const newOperations = { ...existingOperations, ...operations }
   setCache(CACHE_NAMESPACES.ASYNC_SERVICE_OPERATIONS_OPTIONS, [providerName, moduleName], newOperations)
-
-  console.log(getCacheWithProduceFn(CACHE_NAMESPACES.ASYNC_SERVICE_OPERATIONS_OPTIONS, providerName))
 }
 
 export default addOperations
