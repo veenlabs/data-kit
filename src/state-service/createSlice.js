@@ -1,7 +1,7 @@
 import produce from 'immer'
 import { call, put, takeLatest } from 'redux-saga/effects'
 import { CACHE_NAMESPACES, STATE_SERVICE_RESET_ACTION_STATE } from '../helpers/const'
-import { get } from '../helpers/lodash'
+import { get, identity, set } from '../helpers/lodash'
 import { setCache } from '../helpers/cache'
 import { getAllPreferences, getPreferences } from './setup'
 import {
@@ -112,9 +112,25 @@ function formatHandler(sliceName, actionName, handler) {
     // }
     let action = handler
     let sagaEffect = getPreferences('defaultSaga')
+    let addSuccReducer = true
+    let reducerPath = null
+    let successReducer = {}
+    let formatResponse = identity
     if (isHandlerAnComplexAsyncOperation(handler)) {
       action = handler[0]
-      sagaEffect = handler[1] || sagaEffect
+      const sagaOptions = handler[1]
+      sagaEffect = get(sagaOptions, 'sagaEffect', sagaEffect)
+      addSuccReducer = !get(sagaOptions, 'noReducer', false)
+      reducerPath = get(sagaOptions, 'reducerPath', '')
+      formatResponse = get(sagaOptions, 'formatResponse', identity)
+    }
+    if (addSuccReducer) {
+      successReducer = {
+        success: {
+          // this reducer is auto generated
+          reducer: (draft, { payload }) => set(draft, reducerPath, formatResponse(payload)),
+        },
+      }
     }
     return {
       request: {
@@ -127,10 +143,7 @@ function formatHandler(sliceName, actionName, handler) {
         },
         sagaEffect,
       },
-      success: {
-        // this reducer is auto generated
-        reducer: (action, { payload }) => payload,
-      },
+      ...successReducer,
       failure: {
         saga: function* () {
           console.log('@Todo: Remove this saga---->AUTO FAIL')
