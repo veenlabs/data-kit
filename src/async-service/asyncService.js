@@ -74,9 +74,11 @@ const asyncServiceHandler = {
         if (operationName === '__type') {
           return ASYNC_SERVICE_HANDLER_TYPE
         }
-        return (data) => {
+        const fn2 = (data) => {
           return makeRequest({ providerName, moduleName: prop, operationName: operationName, data })
         }
+        fn2.__type = ASYNC_SERVICE_HANDLER_TYPE
+        return fn2
       },
     })
   },
