@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { getCacheWithProduceFn } from '../helpers/cache'
 import {
+  ASYNC_SERVICE_API_ERROR_NAME,
   ASYNC_SERVICE_DEFAULT_MODULE_NAME,
   ASYNC_SERVICE_DEFAULT_PROVIDER_NAME,
   ASYNC_SERVICE_HANDLER_TYPE,
@@ -39,7 +40,6 @@ async function makeRequest({ providerName, moduleName, operationName, data }) {
   const provider = getProviderConfig(providerName)
   const providerType = get(provider, ['type'])
   const options = getOperationOptions(providerName, moduleName, operationName)
-  console.log({ providerName, moduleName, operationName, options })
   let formatOperation = get(provider, ['formatOperation'])
   let runAsyncOperation = get(provider, ['runAsyncOperation'])
   const { beforeRequest, beforeSuccess } = getBeforeRequestBeforeSuccess(options, moduleName, provider)
@@ -56,6 +56,7 @@ async function makeRequest({ providerName, moduleName, operationName, data }) {
     setOperationStatus(providerName, moduleName, operationName, ASYNC_SERVICE_STATUSES.SUCCESS)
     return beforeSuccess(result)
   } catch (error) {
+    error.name = ASYNC_SERVICE_API_ERROR_NAME
     setOperationStatus(providerName, moduleName, operationName, ASYNC_SERVICE_STATUSES.FAILURE)
     throw error
   }
