@@ -35,7 +35,7 @@ Veen Datakit is created to addresss following issues
 - Enterpise apps are filled with repeating codes and their coverage 
 - If I have to make an API call and display the results, then why I have to write lots of call. 
 - Why I should write code to maintain status of Async operations(like APIS)
-- To me Redux thunk looks ugly
+- To me Redux thunk looks too ugly
 - Redux Toolkit doesn't follow the simplicity of Redux 
 
 ## What's Included
