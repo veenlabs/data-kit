@@ -9,9 +9,10 @@ const defaultPreferences = {
 }
 
 /**
- *  beforeHandleSaga: function*(){}
- *  afterSuccessHandleSaga: function*(){}
- *  afterFailHandleSaga: function*(){}
+ *  beforeHandleSaga: function*(action, extraOptions){}
+ *  afterSuccessHandleSaga: function*(action, extraOptions, result){}
+ *  afterFailHandleSaga: function*(action, extraOptions, error, formattedErrors){}
+ *  formatSagaError: (errors)=>{} // This method will receive raw errors from Saga. Whatever is returned from here will be passed back to callback
  *  defaultSaga : takeLatest
  */
 function addPreferences(preferenes) {

@@ -5,6 +5,7 @@ import { get, identity, set } from '../helpers/lodash'
 import { setCache } from '../helpers/cache'
 import { getAllPreferences, getPreferences } from './setup'
 import {
+  formatRequestPayload,
   getActionTypeFromPath,
   getHandlerProps,
   getPathFromActionType,
@@ -24,20 +25,38 @@ const failureStageName = getStageNameFailure()
 
 function commonSaga(saga, extraOptions, handlerPath) {
   return function* (action) {
-    const { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga } = getAllPreferences()
+    const { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga, formatSagaError = identity } = getAllPreferences()
+    const { callback, data } = formatRequestPayload(get(action, 'payload'))
+    set(action, 'payload', { callback, data })
     if (beforeHandleSaga) {
       yield beforeHandleSaga(action, extraOptions)
     }
     try {
-      yield saga(action)
+      const result = yield saga(action)
       if (afterSuccessHandleSaga) {
-        yield afterSuccessHandleSaga(action, extraOptions)
+        yield afterSuccessHandleSaga(action, extraOptions, result)
+      }
+      try {
+        callback(true, result)
+      } catch (error) {
+        console.log('Error thrown at: Success callback', get(action, 'type'))
       }
     } catch (error) {
-      console.log(error)
-      yield put({ type: getActionTypeFromPath([...handlerPath, failureStageName]) })
+      console.warn('Failed at saga', error)
+      let formattedErrors = error
+      try {
+        formattedErrors = formatSagaError(error)
+      } catch (error) {
+        console.log('Error thrown while formatting sagaErrors at: formatSagaError, ', get(action, 'type'), error)
+      }
       if (afterFailHandleSaga) {
-        yield afterFailHandleSaga(action, extraOptions)
+        yield afterFailHandleSaga(action, extraOptions, error, formattedErrors)
+      }
+      yield put({ type: getActionTypeFromPath([...handlerPath, failureStageName]) })
+      try {
+        callback(false, formattedErrors)
+      } catch (error) {
+        console.log('Error thrown at: Faill callback', get(action, 'type'))
       }
     }
   }
@@ -136,10 +155,13 @@ function formatHandler(sliceName, actionName, handler) {
       request: {
         // this saga is auto generated
         saga: function* ({ payload }) {
-          let result = yield call(caller2, action, payload)
+          // it is guaranteed by comman saga that payload will have callback and data
+          const { data } = payload
+          let result = yield call(caller2, action, data)
           // let result = yield call(action, payload)
           let path = [sliceName, actionName, successStageName]
           yield put(produceAction(getActionTypeFromPath(path), result))
+          return result
         },
         sagaEffect,
       },
