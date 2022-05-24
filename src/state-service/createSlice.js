@@ -39,7 +39,7 @@ function commonSaga(saga, extraOptions, handlerPath) {
       try {
         callback(true, result)
       } catch (error) {
-        console.log('Error thrown at: Success callback', get(action, 'type'))
+        console.log('Error thrown at: Success callback', get(action, 'type'), error)
       }
     } catch (error) {
       console.warn('Failed at saga', error)
