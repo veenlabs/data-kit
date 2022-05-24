@@ -1,5 +1,5 @@
 # Data Kit by Veen Labs
-[![npm downloads](https://img.shields.io/npm/dm/@veen2/data-kit.svg?style=flat-square&label=@veen2/data-kit)](https://www.npmjs.com/package/@reduxjs/toolkit)
+[![npm downloads](https://img.shields.io/npm/dm/@veen2/data-kit.svg?style=flat-square&label=@veen2/data-kit)](https://www.npmjs.com/package/@veen2/data-kit)
 
 Highly opinionated utilties for redux/react and async services. Suitable for enterprise level applications to toy apps.
 
