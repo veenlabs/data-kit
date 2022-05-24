@@ -39,7 +39,7 @@ const formatRequestPayload = (payload = {}) => {
   if (payload && payload.callback && payload.data) {
     return payload
   } else {
-    return { callback: identity, data: payload.data }
+    return { callback: identity, data: payload }
   }
 }
 
