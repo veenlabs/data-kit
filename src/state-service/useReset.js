@@ -5,7 +5,7 @@ import { isObjectReactSyntheticEvent } from './utils'
 const createResetAction = (sliceName) => {
   return {
     type: STATE_SERVICE_RESET_ACTION_STATE,
-    payload: isObjectReactSyntheticEvent(sliceName) ? STATE_SERVICE_RESET_ACTION_STATE : sliceName,
+    payload: typeof sliceName === 'string' ? sliceName : STATE_SERVICE_RESET_ACTION_STATE,
   }
 }
 
