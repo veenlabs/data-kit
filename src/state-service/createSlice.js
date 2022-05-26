@@ -56,7 +56,7 @@ function commonSaga(saga, extraOptions, handlerPath) {
       try {
         callback(false, formattedErrors)
       } catch (error) {
-        console.log('Error thrown at: Faill callback', get(action, 'type'))
+        console.log('Error thrown at: Fail callback', get(action, 'type'), error)
       }
     }
   }

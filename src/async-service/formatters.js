@@ -15,8 +15,13 @@ function formatApiOperation(options, provider, data) {
 
   if (typeof options === 'string') {
     url = options
+  } else if (typeof options === 'function') {
+    url = options(data)
   } else if (options.length > 0) {
     url = options[0]
+    if (typeof options[0] === 'function') {
+      url = options[0](data)
+    }
     method = options[1]
   } else {
     method = options.method
