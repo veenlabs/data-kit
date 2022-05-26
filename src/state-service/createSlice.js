@@ -5,7 +5,6 @@ import { get, identity, set } from '../helpers/lodash'
 import { setCache } from '../helpers/cache'
 import { getAllPreferences, getPreferences } from './setup'
 import {
-  formatRequestPayload,
   getActionTypeFromPath,
   getHandlerProps,
   getPathFromActionType,
@@ -26,8 +25,7 @@ const failureStageName = getStageNameFailure()
 function commonSaga(saga, extraOptions, handlerPath) {
   return function* (action) {
     const { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga, formatSagaError = identity } = getAllPreferences()
-    const { callback, data } = formatRequestPayload(get(action, 'payload'))
-    set(action, 'payload', { callback, data })
+    const callback = get(action, ['payload', 'callback'], identity)
     if (beforeHandleSaga) {
       yield beforeHandleSaga(action, extraOptions)
     }
@@ -155,9 +153,8 @@ function formatHandler(sliceName, actionName, handler) {
       request: {
         // this saga is auto generated
         saga: function* ({ payload }) {
-          // it is guaranteed by comman saga that payload will have callback and data
           const { data } = payload
-          let result = yield call(caller2, action, data)
+          let result = yield call(caller2, action, payload)
           // let result = yield call(action, payload)
           let path = [sliceName, actionName, successStageName]
           yield put(produceAction(getActionTypeFromPath(path), result))

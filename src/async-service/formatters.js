@@ -1,3 +1,4 @@
+import { get } from '../helpers/lodash'
 function formatApiOperation(options, provider, data) {
   /**
    * options points to raw property set by user. Below are some examples
@@ -28,10 +29,11 @@ function formatApiOperation(options, provider, data) {
     url = options.url
   }
 
+  const requestData = get(data, 'body', data)
   let finalOptions = {
     url: provider.baseUrl + url,
     method,
-    data: data,
+    data: requestData,
   }
 
   return finalOptions

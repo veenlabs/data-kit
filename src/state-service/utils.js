@@ -35,14 +35,6 @@ const getStageNameSuccess = () => getHandlerStages()[1]
 const getStageNameRequest = () => getHandlerStages()[0]
 const getStageNameFailure = () => getHandlerStages()[2]
 
-const formatRequestPayload = (payload = {}) => {
-  if (payload && payload.callback && payload.data) {
-    return payload
-  } else {
-    return { callback: identity, data: payload }
-  }
-}
-
 export {
   getActionTypeFromPath,
   getPathFromActionType,
@@ -56,5 +48,4 @@ export {
   getStageNameFailure,
   isHandlerAnAsyncOperation,
   isHandlerAnComplexAsyncOperation,
-  formatRequestPayload,
 }
