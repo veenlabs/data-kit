@@ -24,7 +24,7 @@ const failureStageName = getStageNameFailure()
 
 function commonSaga(saga, extraOptions, handlerPath) {
   return function* (action) {
-    const { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga, formatSagaError = identity } = getAllPreferences()
+    const { beforeHandleSaga, afterSuccessHandleSaga, afterFailHandleSaga, afterCompleteSaga, formatSagaError = identity } = getAllPreferences()
     const callback = get(action, ['payload', 'callback'], identity)
     if (beforeHandleSaga) {
       yield beforeHandleSaga(action, extraOptions)
@@ -55,6 +55,10 @@ function commonSaga(saga, extraOptions, handlerPath) {
         callback(false, formattedErrors)
       } catch (error) {
         console.log('Error thrown at: Fail callback', get(action, 'type'), error)
+      }
+    } finally {
+      if (afterCompleteSaga) {
+        yield afterCompleteSaga(action, extraOptions)
       }
     }
   }

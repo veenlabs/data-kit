@@ -12,6 +12,7 @@ const defaultPreferences = {
  *  beforeHandleSaga: function*(action, extraOptions){}
  *  afterSuccessHandleSaga: function*(action, extraOptions, result){}
  *  afterFailHandleSaga: function*(action, extraOptions, error, formattedErrors){}
+ *  afterCompleteSaga: function*(action, extraOptions){} // this is equivalent to finally of try-catch
  *  formatSagaError: (errors)=>{} // This method will receive raw errors from Saga. Whatever is returned from here will be passed back to callback
  *  defaultSaga : takeLatest
  */
