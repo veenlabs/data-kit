@@ -1,5 +1,5 @@
 import produce from 'immer'
-import { call, put, takeLatest } from 'redux-saga/effects'
+import { call, put } from 'redux-saga/effects'
 import { CACHE_NAMESPACES, STATE_SERVICE_RESET_ACTION_STATE } from '../helpers/const'
 import { get, identity, set } from '../helpers/lodash'
 import { setCache } from '../helpers/cache'
