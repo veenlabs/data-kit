@@ -17,6 +17,7 @@ import {
   produceAction,
 } from './utils'
 import getActions from './getActions'
+import { isAsync, isReducer, isSaga, extractSaga, extractReducer, extractAsync } from './handlerWrappers'
 
 const successStageName = getStageNameSuccess()
 const requestStageName = getStageNameRequest()
@@ -101,18 +102,31 @@ const caller2 = async (fn2, data) => {
 
 function formatHandler(sliceName, actionName, handler) {
   /**
-   * This method will eventually format all handler into below tree structure
-   * {
-   * * handler:{reducer,saga},
-   * * handler: {
-   *      request:{reducer,saga},
-   *      success:{reducer,saga},
-   *      failure:{reducer,saga},
-   * * }
-   * }
+   *  handler: Reducer(()=>{})
    */
-  if (isValueAHandler(handler)) {
-    // case 1
+  if (isReducer(handler)) {
+    return {
+      reducer: extractReducer(handler),
+    }
+  } else if (isSaga(handler)) {
+    /**
+     *  handler: Saga(function*() {})
+     */
+    return {
+      saga: extractSaga(handler),
+    }
+  } else if (isValueAHandler(handler)) {
+    /**
+     * This method will eventually format all handler into below tree structure
+     * {
+     * * handler:{reducer,saga},
+     * * handler: {
+     *      request:{reducer,saga},
+     *      success:{reducer,saga},
+     *      failure:{reducer,saga},
+     * * }
+     * }
+     */
     // {
     //     actions:{
     //         getUser:{
@@ -129,17 +143,19 @@ function formatHandler(sliceName, actionName, handler) {
     //     actions:{
     //         getUser: asyncService.getUser
     //         getUser2: [asyncService.getUser, takeLatest]
+    //         getUser3: Async(asyncService.getUser)
+    //         getUser4: [Async(asyncService.getUser), takeLatest]
     //     }
     // }
-    let action = handler
+    let operation = handler
     let sagaEffect = getPreferences('defaultSaga')
     let addSuccReducer = true
     let reducerPath = null
-    let successReducer = {}
     let formatResponse = identity
     let extraOptions = null
+    let successReducer = {}
     if (isHandlerAnComplexAsyncOperation(handler)) {
-      action = handler[0]
+      operation = handler[0]
       const sagaOptions = handler[1]
       sagaEffect = get(sagaOptions, 'sagaEffect', sagaEffect)
       addSuccReducer = !get(sagaOptions, 'noReducer', false)
@@ -155,12 +171,17 @@ function formatHandler(sliceName, actionName, handler) {
         },
       }
     }
+
+    if (isAsync(operation)) {
+      operation = extractAsync(operation)
+    }
+
     return {
       request: {
         // this saga is auto generated
         saga: function* ({ payload }) {
           const { data } = payload
-          let result = yield call(caller2, action, payload)
+          let result = yield call(caller2, operation, payload)
           // let result = yield call(action, payload)
           let path = [sliceName, actionName, successStageName]
           yield put(produceAction(getActionTypeFromPath(path), result))

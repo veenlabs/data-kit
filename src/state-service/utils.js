@@ -1,5 +1,6 @@
 import { ASYNC_SERVICE_HANDLER_TYPE } from '../helpers/const'
-import { get, identity } from '../helpers/lodash'
+import { get } from '../helpers/lodash'
+import { isAsync } from './handlerWrappers'
 
 const getActionTypeFromPath = (path = []) => {
   return path.join('::')
@@ -26,7 +27,7 @@ const produceAction = (type, payload) => {
   }
 }
 
-const isHandlerAnAsyncOperation = (handler) => handler.__type === ASYNC_SERVICE_HANDLER_TYPE || get(handler, ['constructor', 'name']) === 'AsyncFunction'
+const isHandlerAnAsyncOperation = (handler) => handler.__type === ASYNC_SERVICE_HANDLER_TYPE || get(handler, ['constructor', 'name']) === 'AsyncFunction' || isAsync(handler)
 const isHandlerAnComplexAsyncOperation = (handler) => Array.isArray(handler) && handler.length > 0 && isHandlerAnAsyncOperation(handler[0])
 
 const getHandlerStages = () => ['request', 'success', 'failure']
