@@ -30,10 +30,12 @@ function formatApiOperation(options, provider, data) {
   }
 
   const requestData = get(data, 'body', data)
+  const params = get(data, 'search', {})
   let finalOptions = {
     url: provider.baseUrl + url,
     method,
     data: requestData,
+    params,
   }
 
   return finalOptions

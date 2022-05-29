@@ -5,7 +5,7 @@ import { get } from '../helpers/lodash'
 
 const defaultPreferences = {
   defaultSaga: takeLatest,
-  loggingEnabled: true,
+  logEnabled: true,
 }
 
 /**

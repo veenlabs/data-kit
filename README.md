@@ -147,7 +147,7 @@ import someOtherSlice from './slices/someOtherSlice'
 const { configureStore, setup } = StateService
 
 setup({
-  loggingEnabled: true,
+  logEnabled: true,
   beforeHandleSaga: function* (action, extraOptions) {
     console.log({ action, extraOptions })
     console.log('Saga starts....')

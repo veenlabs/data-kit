@@ -25,7 +25,7 @@ function configureStore(...slices) {
   const sagaMiddleWare = createSagaMiddleWare()
   middlewares.push(sagaMiddleWare)
 
-  if (getPreferences('loggingEnabled')) {
+  if (getPreferences('logEnabled')) {
     middlewares.push(
       createLogger({
         logErrors: true,
