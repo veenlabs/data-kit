@@ -163,14 +163,20 @@ function formatHandler(sliceName, actionName, handler) {
       reducerPath = get(sagaOptions, 'reducerPath', '')
       formatResponse = get(sagaOptions, 'formatResponse', identity)
       extraOptions = get(sagaOptions, 'extraOptions', null)
-      let requestReducer_ = get(sagaOptions, 'reducer', null)
-      if(requestReducer_){
+      let requestReducer_ = get(sagaOptions, 'requestReducer', null)
+      let successReducer_ = get(sagaOptions, 'successReducer', null)
+      if (requestReducer_) {
         requestReducer = {
-          reducer:requestReducer_
+          reducer: requestReducer_,
+        }
+      }
+      if (successReducer_) {
+        successReducer = {
+          reducer: successReducer_,
         }
       }
     }
-    if (addSuccReducer) {
+    if (addSuccReducer && !successReducer.reducer) {
       successReducer = {
         success: {
           // this reducer is auto generated
@@ -196,7 +202,7 @@ function formatHandler(sliceName, actionName, handler) {
         },
         extraOptions,
         sagaEffect,
-        ...requestReducer
+        ...requestReducer,
       },
       ...successReducer,
       failure: {
