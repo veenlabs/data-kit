@@ -154,6 +154,7 @@ function formatHandler(sliceName, actionName, handler) {
     let formatResponse = identity
     let extraOptions = null
     let successReducer = {}
+    let requestReducer = {}
     if (isHandlerAnComplexAsyncOperation(handler)) {
       operation = handler[0]
       const sagaOptions = handler[1]
@@ -162,6 +163,12 @@ function formatHandler(sliceName, actionName, handler) {
       reducerPath = get(sagaOptions, 'reducerPath', '')
       formatResponse = get(sagaOptions, 'formatResponse', identity)
       extraOptions = get(sagaOptions, 'extraOptions', null)
+      let requestReducer_ = get(sagaOptions, 'reducer', null)
+      if(requestReducer_){
+        requestReducer = {
+          reducer:requestReducer_
+        }
+      }
     }
     if (addSuccReducer) {
       successReducer = {
@@ -189,6 +196,7 @@ function formatHandler(sliceName, actionName, handler) {
         },
         extraOptions,
         sagaEffect,
+        ...requestReducer
       },
       ...successReducer,
       failure: {
