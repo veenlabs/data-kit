@@ -172,11 +172,13 @@ function formatHandler(sliceName, actionName, handler) {
       }
       if (successReducer_) {
         successReducer = {
-          reducer: successReducer_,
+          success: {
+            reducer: successReducer_,
+          },
         }
       }
     }
-    if (addSuccReducer && !successReducer.reducer) {
+    if (addSuccReducer && !successReducer.success) {
       successReducer = {
         success: {
           // this reducer is auto generated
