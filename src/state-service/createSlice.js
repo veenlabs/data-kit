@@ -96,7 +96,7 @@ const getAllSagas = (sliceName, formattedActions) => {
 
 const isValueAHandler = (value) => Object.keys(value).some((k) => getHandlerProps().indexOf(k) > -1)
 
-const caller2 = async (fn2, data) => {
+const callWrapper = async (fn2, data) => {
   return await fn2(data)
 }
 
@@ -182,7 +182,10 @@ function formatHandler(sliceName, actionName, handler) {
       successReducer = {
         success: {
           // this reducer is auto generated
-          reducer: (draft, { payload }) => set(draft, reducerPath, formatResponse(payload)),
+          reducer: (draft, action) => {
+            const result = get(action, ['payload', 'result'])
+            set(draft, reducerPath, formatResponse(result))
+          },
         },
       }
     }
@@ -195,11 +198,9 @@ function formatHandler(sliceName, actionName, handler) {
       request: {
         // this saga is auto generated
         saga: function* ({ payload }) {
-          const { data } = payload
-          let result = yield call(caller2, operation, payload)
-          // let result = yield call(action, payload)
+          let result = yield call(callWrapper, operation, payload)
           let path = [sliceName, actionName, successStageName]
-          yield put(produceAction(getActionTypeFromPath(path), result))
+          yield put(produceAction(getActionTypeFromPath(path), { result, requestPayload: payload }))
           return result
         },
         extraOptions,
