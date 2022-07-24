@@ -1,9 +1,10 @@
 import produce from 'immer'
-import { call, put } from 'redux-saga/effects'
+import { call, put, select } from 'redux-saga/effects'
 import { CACHE_NAMESPACES, STATE_SERVICE_RESET_ACTION_STATE } from '../helpers/const'
 import { get, identity, set } from '../helpers/lodash'
 import { setCache } from '../helpers/cache'
 import { getAllPreferences, getPreferences } from './setup'
+
 import {
   getActionTypeFromPath,
   getHandlerProps,
@@ -155,6 +156,7 @@ function formatHandler(sliceName, actionName, handler) {
     let extraOptions = null
     let successReducer = {}
     let requestReducer = {}
+    let requestSagaPayloadFormatter = null
     if (isHandlerAnComplexAsyncOperation(handler)) {
       operation = handler[0]
       const sagaOptions = handler[1]
@@ -165,6 +167,7 @@ function formatHandler(sliceName, actionName, handler) {
       extraOptions = get(sagaOptions, 'extraOptions', null)
       let requestReducer_ = get(sagaOptions, 'requestReducer', null)
       let successReducer_ = get(sagaOptions, 'successReducer', null)
+      requestSagaPayloadFormatter = get(sagaOptions, 'requestSagaPayloadFormatter')
       if (requestReducer_) {
         requestReducer = {
           reducer: requestReducer_,
@@ -198,7 +201,13 @@ function formatHandler(sliceName, actionName, handler) {
       request: {
         // this saga is auto generated
         saga: function* ({ payload }) {
-          let result = yield call(callWrapper, operation, payload)
+          let formattedPaylod = payload
+          if (requestSagaPayloadFormatter) {
+            let state = yield select((s) => s)
+            let f2 = yield requestSagaPayloadFormatter({ payload: payload.body }, state)
+            set(formattedPaylod, 'body', f2)
+          }
+          let result = yield call(callWrapper, operation, formattedPaylod)
           let path = [sliceName, actionName, successStageName]
           yield put(produceAction(getActionTypeFromPath(path), { result, requestPayload: payload }))
           return result
