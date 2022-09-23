@@ -26,11 +26,11 @@ const getBeforeRequestBeforeSuccess = (operationOptions, moduleName, provider) =
   const beforeSuccessPar = get(provider, 'beforeSuccess', _identity)
   const beforeSuccessCh = get(operationOptions, 'beforeSuccess', _chain)
 
-  const beforeRequest = (options) => {
-    return beforeRequestCh(beforeRequestPar, options)
+  const beforeRequest = async (options) => {
+    return await beforeRequestCh(beforeRequestPar, options)
   }
-  const beforeSuccess = (data) => {
-    return beforeSuccessCh(beforeSuccessPar, data)
+  const beforeSuccess = async (data) => {
+    return await beforeSuccessCh(beforeSuccessPar, data)
   }
 
   return { beforeRequest, beforeSuccess }
@@ -48,13 +48,14 @@ async function makeRequest({ providerName, moduleName, operationName, data }) {
   runAsyncOperation = !!runAsyncOperation ? runAsyncOperation : providerType == ASYNC_SERVICE_PROVIDER_WEB_API_TYPE ? axios : _identity3
 
   let requestOptions = formatOperation(options, provider, data)
-  requestOptions = beforeRequest(requestOptions, data)
+  requestOptions = await beforeRequest(requestOptions, data)
 
   setOperationStatus(providerName, moduleName, operationName, ASYNC_SERVICE_STATUSES.REQUEST)
   try {
     const result = await runAsyncOperation(requestOptions)
     setOperationStatus(providerName, moduleName, operationName, ASYNC_SERVICE_STATUSES.SUCCESS)
-    return beforeSuccess(result)
+    const result2 = await beforeSuccess(result)
+    return result2
   } catch (error) {
     error.name = ASYNC_SERVICE_API_ERROR_NAME
     setOperationStatus(providerName, moduleName, operationName, ASYNC_SERVICE_STATUSES.FAILURE)
